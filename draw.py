@@ -42,7 +42,7 @@ DO_SHARE = None  # workaround for variable_scope(reuse = True)
 
 # x is our input (batch_size * img_size)
 x = tf.placeholder(tf.float32, shape=(batch_size, img_size))
-y = tf.placeholder(tf.float32,shape=(batch_size,img_size)) # input (batch_size * img_size)
+y = tf.placeholder(tf.float32, shape=(batch_size, img_size))
 e = tf.random_normal((batch_size, z_size), mean=0, stddev=1)  # Qsampler noise
 lstm_enc = tf.contrib.rnn.LSTMCell(enc_size, state_is_tuple=True)  # encoder Op
 lstm_dec = tf.contrib.rnn.LSTMCell(dec_size, state_is_tuple=True)  # decoder Op
@@ -243,12 +243,12 @@ tf.global_variables_initializer().run()
 
 # to restore from model, uncomment the next line
 # saver.restore(sess, "/tmp/draw/drawmodel.ckpt")
-img_generator = batch_gen.BatchGenerator(batch_size,FLAGS.data_dir);
+img_generator = batch_gen.BatchGenerator(batch_size, FLAGS.data_dir)
 
 for i in range(train_iters):
         # xtrain is (batch_size x img_size)
         xtrain, ytrain = img_generator.next()
-        feed_dict = {x: xtrain,y:ytrain}
+        feed_dict = {x: xtrain, y: ytrain}
         results = sess.run(fetches, feed_dict)
         Lxs[i], Lzs[i], _ = results
         if i % 100 == 0:
