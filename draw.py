@@ -23,8 +23,8 @@ FLAGS = tf.flags.FLAGS
 
 A, B = 28, 28  # image width, height
 img_size = B*A  # the canvas size
-enc_size = 256  # number of hidden units / output size in LSTM
-dec_size = 256
+enc_size = 256  # number of hidden units / output size in LSTM of the encoder
+dec_size = 256  # number of hidden units / output size in LSTM of the decoder
 read_n = 5  # read glimpse grid width/height
 write_n = 5  # write glimpse grid width/height
 read_size = 2*read_n*read_n if FLAGS.read_attn else 2*img_size
@@ -40,7 +40,7 @@ eps = 1e-8  # epsilon for numerical stability
 
 DO_SHARE = None  # workaround for variable_scope(reuse = True)
 
-# input (batch_size * img_size)
+# x is our input (batch_size * img_size)
 x = tf.placeholder(tf.float32, shape=(batch_size, img_size))
 e = tf.random_normal((batch_size, z_size), mean=0, stddev=1)  # Qsampler noise
 lstm_enc = tf.contrib.rnn.LSTMCell(enc_size, state_is_tuple=True)  # encoder Op
