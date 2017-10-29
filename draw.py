@@ -9,7 +9,7 @@ Example Usage:
 Author: Eric Jang
 """
 
-from tensorflow.examples.tutorials import mnist
+import batch_generator as batch_gen
 import numpy as np
 import os
 import tensorflow as tf
@@ -42,6 +42,7 @@ DO_SHARE = None  # workaround for variable_scope(reuse = True)
 
 # x is our input (batch_size * img_size)
 x = tf.placeholder(tf.float32, shape=(batch_size, img_size))
+y = tf.placeholder(tf.float32,shape=(batch_size,img_size)) # input (batch_size * img_size)
 e = tf.random_normal((batch_size, z_size), mean=0, stddev=1)  # Qsampler noise
 lstm_enc = tf.contrib.rnn.LSTMCell(enc_size, state_is_tuple=True)  # encoder Op
 lstm_dec = tf.contrib.rnn.LSTMCell(dec_size, state_is_tuple=True)  # decoder Op
@@ -230,14 +231,6 @@ train_op = optimizer.apply_gradients(grads)
 
 # ==RUN TRAINING== #
 
-data_directory = os.path.join(FLAGS.data_dir, "mnist")
-if not os.path.exists(data_directory):
-        os.makedirs(data_directory)
-
-# binarized (0-1) mnist data
-train_data = mnist.input_data.read_data_sets(
-                data_directory, one_hot=True).train
-
 fetches = []
 fetches.extend([Lx, Lz, train_op])
 Lxs = [0]*train_iters
@@ -250,11 +243,12 @@ tf.global_variables_initializer().run()
 
 # to restore from model, uncomment the next line
 # saver.restore(sess, "/tmp/draw/drawmodel.ckpt")
+img_generator = batch_gen.BatchGenerator(batch_size,FLAGS.data_dir);
 
 for i in range(train_iters):
         # xtrain is (batch_size x img_size)
-        xtrain, _ = train_data.next_batch(batch_size)
-        feed_dict = {x: xtrain}
+        xtrain, ytrain = img_generator.next()
+        feed_dict = {x: xtrain,y:ytrain}
         results = sess.run(fetches, feed_dict)
         Lxs[i], Lzs[i], _ = results
         if i % 100 == 0:
