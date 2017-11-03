@@ -48,15 +48,15 @@ img1 = rgb2gray(img1)
 img2 = rgb2gray(img2)
 
 # Construct mini-batch
-img1 = img1.reshape(img1.shape + (1,))
-img2 = img2.reshape(img2.shape + (1,))
+img1 = img1.reshape(img1.shape + (1,)).astype(np.float32)
+img2 = img2.reshape(img2.shape + (1,)).astype(np.float32)
 mini_batch = np.stack((img1, img2))
 
 # Load filters
 filter_kernel = pkl.load(open('filters/np_LM_filter_p2.pkl', 'rb'))
 
 # Change filters to 4D (for convolution)
-filter_kernel = filter_kernel.reshape((49, 49, 1, 48))
+filter_kernel = filter_kernel.reshape((49, 49, 1, 48)).astype(np.float32)
 
 # Build operations
 filter_response_op = im2filter_response(tf.convert_to_tensor(mini_batch),
