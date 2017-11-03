@@ -49,6 +49,46 @@ lstm_enc = tf.contrib.rnn.LSTMCell(enc_size, state_is_tuple=True)  # encoder Op
 lstm_dec = tf.contrib.rnn.LSTMCell(dec_size, state_is_tuple=True)  # decoder Op
 
 
+def filter_response2histogram(filter_responses, training_class_centroids,
+                              num_bins):
+    # TODO
+    return
+
+
+def im2filter_response(imgs, filter_kernel_4d, hps=None):
+    """
+    constructs texture filter response for a mini-batch of grayscale images
+    imgs: NxHxWx1 batch of *GRAYSCALE* images
+    filter_kernel: 4-D filter kernel [height x width x 1 x num_output_channels]
+    hps: Hyper params. I only need the batch size, image patch heigt and width
+    returns NxHxWxC tensor of C-channels of filter responses
+    """
+    num_channels = filter_kernel_4d.get_shape()[-1]
+    mini_batch_shape = imgs.get_shape()
+    [n_batch, height, width, _] = mini_batch_shape
+
+    response = tf.nn.conv2d(imgs, filter_kernel_4d, stride=[1, 1, 1, 1],
+                            padding='SAME')
+    # response_norm = tf.norm(response, axis=3, keep_dims=False)  # o/p NxHxW
+    response_norm = tf.norm(response, axis=3, keep_dims=True)  # o/p NxHxWx1
+    sc = tf.log(1 + (response_norm / 0.03))
+    sc_tile = tf.tile(sc, [1, num_channels, 1])
+    sc_tile = tf.reshape(sc_tile, [n_batch, height, width, num_channels])
+    sc_tile = tf.transpose(sc_tile, [0, 2, 3, 1])
+
+# No need for tiling. Array broadcasting will do the job
+    # response_norm_tile = tf.tile(response_norm, [1, num_channels, 1])
+    # response_norm_tile = tf.reshape(response_norm_tile,
+    #                                 [n_batch, height, width, num_channels])
+    # response_norm_tile = tf.transpose(response_norm_tile, [0, 2, 3, 1])
+
+    # numerator = tf.multiply(response, sc_tile)
+    # return tf.divide(numerator, response_norm_tile)
+
+    numerator = tf.multiply(response, sc)
+    return tf.divide(numerator, response_norm)
+
+
 def linear(x, output_dim):
     """
     affine transformation Wx+b
