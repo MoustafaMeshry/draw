@@ -13,7 +13,7 @@ class BatchGenerator:
 
     def __init__(self,batch_size,read_dir=None):
         self.batch_size = batch_size;
-        self.mnist = True;
+        self.mnist = False;
         if(self.mnist):
             data_directory = os.path.join(read_dir, "mnist")
             if not os.path.exists(data_directory):
@@ -22,7 +22,7 @@ class BatchGenerator:
         else:
             self.img_list = [];
             for i in range(5):
-                img_path = './texture/trivial/'+str(i)+'.jpg';
+                img_path = './texture/simple/'+str(i)+'.jpg';
                 img = cv2.imread(img_path,0)
                 img = img.astype(np.float32) / 255
                 self.img_list.append(img)

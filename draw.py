@@ -181,7 +181,7 @@ dec_state = lstm_dec.zero_state(batch_size, tf.float32)
 # construct the unrolled computational graph
 for t in range(T):
     c_prev = tf.zeros((batch_size, img_size)) if t == 0 else cs[t-1]
-    x_hat = x-tf.sigmoid(c_prev)  # error image
+    x_hat = y-tf.sigmoid(c_prev)  # error image
     r = read(x, x_hat, h_dec_prev)
     h_enc, enc_state = encode(enc_state, tf.concat([r, h_dec_prev], 1))
     z, mus[t], logsigmas[t], sigmas[t] = sampleQ(h_enc)
