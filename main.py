@@ -16,7 +16,7 @@ FLAGS = tf.flags.FLAGS
 
 
 if __name__ == '__main__':
-    model = draw_model.DrawModel(const.batch_size,FLAGS);
+    model = draw_model.DrawModel(FLAGS);
     filter_bank_loss = texture_loss.TextureLoss();
 
     # reconstruction term appears to have been collapsed down to a single scalar
