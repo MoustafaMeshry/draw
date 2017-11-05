@@ -33,6 +33,10 @@ class TextureLoss:
                  1.0 - t) * tf.log(1.0 - o + const.eps))
 
     def texture_filter_bank_loss(self, y, y_gt):
+
+        y = tf.reshape(y, [self.batch_sz, 28, 28, 1])
+        y_gt = tf.reshape(y_gt, [self.batch_sz, 28, 28, 1])
+
         y_filter_response = im2filter_response(y, self.filter_tf)
         y_gt_filter_response = im2filter_response(y_gt, self.filter_tf)
 
@@ -57,7 +61,8 @@ def im2filter_response(imgs, filter_kernel_4d):
     """
     # num_channels = filter_kernel_4d.get_shape()[-1]
     mini_batch_shape = imgs.get_shape()
-    [n_batch, height, width, _] = mini_batch_shape
+    print(mini_batch_shape)
+    #[n_batch, height, width, _] = mini_batch_shape
 
     response = tf.nn.conv2d(imgs, filter_kernel_4d, strides=[1, 1, 1, 1],
                             padding='SAME')
