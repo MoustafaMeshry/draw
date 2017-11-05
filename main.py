@@ -17,7 +17,11 @@ FLAGS = tf.flags.FLAGS
 
 if __name__ == '__main__':
     model = draw_model.DrawModel(FLAGS);
-    filter_bank_loss = texture_loss.TextureLoss();
+    batch_sz = const.batch_size
+    num_bins = 20;
+    filter_file_path = './filters/np_LM_filter_p2.pkl'
+    centroids_file_path = './filters/np_centroids_p2.pkl'
+    filter_bank_loss = texture_loss.TextureLoss(filter_file_path, centroids_file_path, num_bins,batch_sz);
 
     # reconstruction term appears to have been collapsed down to a single scalar
     # value (rather than one per item in minibatch)

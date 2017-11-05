@@ -14,7 +14,7 @@ gpu_used = False
 if(gpu_used):
     gpu_train_iters = 10000
 else:
-    cpu_train_iters = 3000
+    cpu_train_iters = 10000
 
 train_iters = cpu_train_iters
 
