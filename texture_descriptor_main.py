@@ -97,6 +97,8 @@ def main(_):
     dataset_path = 'texture/trivial'
     file_ext = 'jpg'
     num_bins = 200
+    # this function will save a file 'data/debug_histograms.mat' with the
+    # histograms of all images in dataset_path
     debug_descriptor(dataset_path, file_ext, num_bins)
 
 
