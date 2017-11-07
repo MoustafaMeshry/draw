@@ -59,10 +59,18 @@ def im2filter_response(imgs, filter_kernel_4d):
     filter_kernel: 4-D filter kernel [height x width x 1 x num_channels]
     returns NxHxWxC tensor of C-channels of filter responses
     """
+    # normalize each image
+    means, variances = tf.nn.moments(imgs, axes=[1, 2, 3], keep_dims=True)
+    imgs = (imgs - means) / tf.sqrt(variances)
+
+    # Flip kernels so to convert Tf's cross-correlation to actual convolution!
+    flip = [slice(None, None, -1), slice(None, None, -1)]
+    filter_kernel_4d = filter_kernel_4d[flip]
+
     # num_channels = filter_kernel_4d.get_shape()[-1]
     mini_batch_shape = imgs.get_shape()
     print(mini_batch_shape)
-    #[n_batch, height, width, _] = mini_batch_shape
+    # [n_batch, height, width, _] = mini_batch_shape
 
     response = tf.nn.conv2d(imgs, filter_kernel_4d, strides=[1, 1, 1, 1],
                             padding='SAME')
