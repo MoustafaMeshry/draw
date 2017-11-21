@@ -1,5 +1,5 @@
 batch_size = 100  # training minibatch size
-A, B = 28, 28  # image width, height
+A, B = 28, 28 # image width, height
 img_size = B*A  # the canvas size
 enc_size = 256  # number of hidden units / output size in LSTM of the encoder
 dec_size = 256  # number of hidden units / output size in LSTM of the decoder
@@ -12,10 +12,17 @@ eps = 1e-8  # epsilon for numerical stability
 
 gpu_used = False
 if(gpu_used):
-    gpu_train_iters = 10000
+    train_iters = 10000
 else:
-    cpu_train_iters = 10000
+    train_iters = 1100
 
-train_iters = cpu_train_iters
 
+
+
+from enum import Enum
+class Direction(Enum):
+    UP = 0
+    DOWN = 1
+    LEFT = 2
+    RIGHT = 3
 

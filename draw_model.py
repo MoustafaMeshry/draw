@@ -14,10 +14,10 @@ class DrawModel:
     Lz: hidden output distribution
     '''
 
-    def __init__(self,FLAGS):
+    def __init__(self,read_attn,write_attn):
         self._DO_SHARE = None  # workaround for variable_scope(reuse = True)
-        self._read_size = 2 * const.read_n * const.read_n if FLAGS.read_attn else 2 * const.img_size
-        self._write_size = const.write_n * const.write_n if FLAGS.write_attn else const.img_size
+        self._read_size = 2 * const.read_n * const.read_n if read_attn else 2 * const.img_size
+        self._write_size = const.write_n * const.write_n if write_attn else const.img_size
         self._batch_size = const.batch_size
         DO_SHARE = None  # workaround for variable_scope(reuse = True)
 
@@ -27,8 +27,8 @@ class DrawModel:
         self._e = tf.random_normal((const.batch_size, const.z_size), mean=0, stddev=1)  # Qsampler noise
         self._lstm_enc = tf.contrib.rnn.LSTMCell(const.enc_size, state_is_tuple=True)  # encoder Op
         self._lstm_dec = tf.contrib.rnn.LSTMCell(const.dec_size, state_is_tuple=True)  # decoder Op
-        read = self.read_attn if FLAGS.read_attn else self.read_no_attn
-        write = self.write_attn if FLAGS.write_attn else self.write_no_attn
+        read = self.read_attn if read_attn else self.read_no_attn
+        write = self.write_attn if write_attn else self.write_no_attn
 
         # ==STATE VARIABLES== #
 

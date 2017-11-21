@@ -21,7 +21,7 @@ if __name__ == '__main__':
     direction = const.Direction.DOWN.value
     size = const.A
     with_attention = False
-    save_path = os.path.join("./train/", 'simple_' + str(direction) + '_s' + str(size) + '_a' + str(with_attention));
+    save_path = os.path.join("./train/", 'simple_d' + str(direction) + '_s' + str(size) + '_a' + str(with_attention));
     tf.flags.DEFINE_string("data_dir", save_path, "")
     tf.flags.DEFINE_boolean("read_attn", with_attention, "enable attention for reader")
     tf.flags.DEFINE_boolean("write_attn", with_attention, "enable attention for writer")
@@ -62,32 +62,26 @@ if __name__ == '__main__':
     xtrain = xtrain[0:10,:];
     ytrain = ytrain [0:10, :];
 
-    for t in range(T):
+    t=9
         #img = xrecons_grid(X[t, :, :], B, A)
 
-        img = np.zeros((2*B + 10 + 2*B,xtrain.shape[0]*A))
-        print(img.shape)
-        for i in range(xtrain.shape[0]):
-            img[0:B, i * A:(i + 1) * A] = np.reshape(ytrain[i, :], (B, A))*255;
-            img[B+4:2*B+4, i * A:(i + 1) * A] = np.reshape(xtrain[i, :], (B, A))*255;
+    img = np.zeros((2*B + 10 + 2*B,xtrain.shape[0]*A))
+    print(img.shape)
+    for i in range(xtrain.shape[0]):
+        img_gt = np.reshape(ytrain[i, :], (B, A))*255;
+        img_in = np.reshape(xtrain[i, :], (B, A))*255;
 
-            im = (np.reshape(y_recons[t, i, :], (B, A)) * 255).astype(np.uint8)
-            if(is_result_sharpen):
-                kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-                im = cv2.filter2D(im, -1, kernel)
+        img_out = (np.reshape(y_recons[t, i, :], (B, A)) * 255).astype(np.uint8)
+        if(is_result_sharpen):
+            kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
+            img_out = cv2.filter2D(img_out, -1, kernel)
 
-            img[2 * B + 10:3 * B + 10, i * A:(i + 1) * A] = im;
-            img[3*B+10:4*B+10, i * A:(i + 1) * A] = (np.reshape(xtrain[i, :], (B, A)) * 255).astype(np.uint8);
 
-        plt.matshow(img, cmap=plt.cm.hot)
-        # you can merge using imagemagick, i.e. convert -delay
-        # 10 -loop 0 *.png mnist.gif
+        cv2.imwrite('./output/figs/gt_'+str(i)+'.png',img_gt)
+        cv2.imwrite('./output/figs/in_'+str(i)+'.png', img_in)
+        cv2.imwrite('./output/figs/out_'+str(i)+'.png', img_out)
 
-        imgname = '%s_%d.png' % (prefix, t)
-        cv2.imwrite(imgname, img)
-        #plt.savefig(imgname)
-        print(imgname)
-        plt.close()
+
 
     out_file = os.path.join(FLAGS.data_dir, "draw_data.npy")
     [Lxs, Lzs] = np.load(out_file)
