@@ -54,37 +54,46 @@ def debug_descriptor(input_path, file_ext, num_bins):
 
     hists_all = []
     sess = tf.InteractiveSession()
-    for f in glob.glob(path):
-        img = skimage.io.imread(f)
-        img = rgb2gray(img)
-        # img = img[0:50, 0:50]
-        assert img.shape[0] < 100 and img.shape[1] < 100, (
-            "Image size is too big and might cause memory problems in KNN")
 
-        # Reshape to 1xHxWx1 (a mini_batch of size 1)
-        mini_batch = img.reshape((1,) + img.shape + (1,)).astype(np.float32)
-        mini_batch = tf.convert_to_tensor(mini_batch)
+    for ii in range(2):
+        for f in glob.glob(path):
+            img = skimage.io.imread(f)
+            img = rgb2gray(img)
+            img = img[0:50, 0:50]
+            assert img.shape[0] < 100 and img.shape[1] < 100, (
+                "Image size is too big and might cause memory problems in KNN")
 
-        # Load filters
-        filter_kernel = pkl.load(open('filters/np_LM_filter_p2.pkl', 'rb'))
-        lm_centroids = pkl.load(open('filters/np_centroids_p2.pkl', 'rb'))
-        lm_centroids = lm_centroids.astype(np.float32)
+            # Reshape to 1xHxWx1 (a mini_batch of size 1)
+            # mini_batch_sz = 1
+            # mini_batch = img.reshape((1,) + img.shape + (1,)).astype(np.float32)
+            # mini_batch = img.reshape((1,) + img.shape + (1,)).astype(np.float32)
+            # mini_batch = tf.convert_to_tensor(mini_batch)
 
-        # Change filters to 4D (for convolution)
-        filter_kernel = filter_kernel.reshape((49, 49, 1, 48)).astype(
-            np.float32)
-        filter_kernel_tf = tf.convert_to_tensor(filter_kernel)
+            mini_batch_sz = 5
+            mini_batch = img.reshape(img.shape + (1,)).astype(np.float32)
+            mini_batch = np.stack((mini_batch, mini_batch, mini_batch, mini_batch, mini_batch))
+            mini_batch = tf.convert_to_tensor(mini_batch)
 
-        # Build operations
-        filter_response_op = im2filter_response(
-                            mini_batch, tf.convert_to_tensor(filter_kernel_tf))
+            # Load filters
+            filter_kernel = pkl.load(open('filters/np_LM_filter_p2.pkl', 'rb'))
+            lm_centroids = pkl.load(open('filters/np_centroids_p2.pkl', 'rb'))
+            lm_centroids = lm_centroids.astype(np.float32)
 
-        hists_op = filter_response2histogram(filter_response_op, lm_centroids,
-                                             num_bins, 1)
+            # Change filters to 4D (for convolution)
+            filter_kernel = filter_kernel.reshape((49, 49, 1, 48)).astype(
+                np.float32)
+            filter_kernel_tf = tf.convert_to_tensor(filter_kernel)
 
-        # Run im2filter_response in tensorflow
-        hist = sess.run(hists_op)
-        hists_all.append(np.squeeze(hist))
+            # Build operations
+            filter_response_op = im2filter_response(
+                                mini_batch, tf.convert_to_tensor(filter_kernel_tf))
+
+            hists_op = filter_response2histogram(filter_response_op, lm_centroids,
+                                                 num_bins, mini_batch_sz)
+
+            # Run im2filter_response in tensorflow
+            hist = sess.run(hists_op)
+            hists_all.append(np.squeeze(hist))
 
     hist_dict = {'histograms': hists_all}
     sio.savemat(output_path, hist_dict)

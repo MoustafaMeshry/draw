@@ -10,7 +10,7 @@ T = 10  # MNIST generation sequence length
 learning_rate = 1e-3  # learning rate for optimizer
 eps = 1e-8  # epsilon for numerical stability
 
-gpu_used = False
+gpu_used = True
 if(gpu_used):
     train_iters = 10000
 else:

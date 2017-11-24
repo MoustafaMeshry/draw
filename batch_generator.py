@@ -22,7 +22,7 @@ class BatchGenerator:
             self.train_data = mnist.input_data.read_data_sets(data_directory, one_hot=True).train # binarized (0-1) mnist data
         else:
             self.img_list = [];
-            for i in range(5):
+            for i in range(5):  # 5 is the number of images in the trainset!!
                 img_path = './texture/simple/'+str(i)+'.jpg';
                 img = cv2.imread(img_path,0)
                 img = img.astype(np.float32) / 255
@@ -75,7 +75,8 @@ class BatchGenerator:
                 xtrain[i,:] = img_x.flatten();
                 ytrain[i, :] = img_y.flatten();
                 #print('Generating texture');
-        return xtrain,ytrain
+        # return xtrain,ytrain
+        return xtrain,xtrain
 
 
 if __name__ == '__main__':

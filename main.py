@@ -14,7 +14,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 if __name__ == '__main__':
     direction = const.Direction.LEFT.value
     size = const.A
-    with_attention= False
+    with_attention= True
     save_path = os.path.join("./train/",'simple_d'+str(direction)+'_s'+str(size)+'_a'+str(with_attention));
     tf.flags.DEFINE_string("data_dir", save_path , "")
     tf.flags.DEFINE_boolean("read_attn", with_attention, "enable attention for reader")
@@ -22,7 +22,7 @@ if __name__ == '__main__':
     FLAGS = tf.flags.FLAGS
 
 
-    model = draw_model.DrawModel(FLAGS);
+    model = draw_model.DrawModel(FLAGS.read_attn, FLAGS.write_attn);
     batch_sz = const.batch_size
     num_bins = 200;
     filter_file_path = './filters/np_LM_filter_p2.pkl'
@@ -37,12 +37,15 @@ if __name__ == '__main__':
     # after computing binary cross entropy, sum across features then take the
     # mean of those sums across minibatches
 
-    Lx = tf.reduce_sum(filter_bank_loss.binary_crossentropy(model.y, y_recons ), 1)  # reconstruction term
-    Lx = tf.reduce_mean(Lx)
-    Lz = model.Lz
+    # Lx = tf.reduce_sum(filter_bank_loss.binary_crossentropy(model.y, y_recons ), 1)  # reconstruction term
+    # Lx = tf.reduce_mean(Lx)
+    # Lz = model.Lz
 
-    #Lx = filter_bank_loss.texture_filter_bank_loss(model.y, y_recons)  # reconstruction term
-    #Lz = tf.divide(model.Lz,10)
+    Lx = filter_bank_loss.texture_filter_bank_loss(model.y, y_recons)  # reconstruction term
+    # Lz = tf.divide(model.Lz,10)
+    Lz = tf.divide(model.Lz, 10*2*8)
+    # Lc = tf.reduce_sum(filter_bank_loss.binary_crossentropy(model.y, y_recons ), 1)  # reconstruction term
+    # Lc = tf.reduce_mean(Lc)
     # Cost conatins two parts
     ## 1. Cost from latent variable distribution
     ## 2. Cost from latent variable distribution
@@ -63,9 +66,10 @@ if __name__ == '__main__':
     # ==RUN TRAINING== #
 
     fetches = []
-    fetches.extend([Lx, Lz, train_op])
+    fetches.extend([Lx, Lz, train_op, Lc])
     Lxs = [0] * const.train_iters
     Lzs = [0] * const.train_iters
+    Lcs = [0] * const.train_iters
 
     sess = tf.InteractiveSession()
 
@@ -85,10 +89,10 @@ if __name__ == '__main__':
         xtrain, ytrain = img_generator.next(direction=direction)
         feed_dict = {model.x: xtrain, model.y: ytrain}
         results = sess.run(fetches, feed_dict)
-        Lxs[i], Lzs[i], _ = results
+        Lxs[i], Lzs[i], _, Lcs[i] = results
         if i != 0 and i % 100 == 0:
-            print("iter=%d : Lx: %f Lz: %f" % (i, Lxs[i], Lzs[i]))
-            if (not const.gpu_used):
+            print("iter=%d : Lx: %f Lz: %f (Lc = %f)" % (i, Lxs[i], Lzs[i], Lcs[i]))
+            if (i % 1000 == 0):
                 ckpt_file = os.path.join(FLAGS.data_dir, "drawmodel.ckpt")
                 print("Model saved in file: %s" % saver.save(sess, ckpt_file))
 

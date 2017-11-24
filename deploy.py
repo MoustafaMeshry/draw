@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     direction = const.Direction.DOWN.value
     size = const.A
-    with_attention = False
+    with_attention = True
     save_path = os.path.join("./train/", 'simple_' + str(direction) + '_s' + str(size) + '_a' + str(with_attention));
     tf.flags.DEFINE_string("data_dir", save_path, "")
     tf.flags.DEFINE_boolean("read_attn", with_attention, "enable attention for reader")
@@ -28,7 +28,7 @@ if __name__ == '__main__':
     FLAGS = tf.flags.FLAGS
 
     is_result_sharpen = False
-    model = draw_model.DrawModel(FLAGS);
+    model = draw_model.DrawModel(FLAGS.read_attn, FLAGS.write_attn);
 
 
 
@@ -57,7 +57,8 @@ if __name__ == '__main__':
     y_recons = 1.0 / (1.0 + np.exp(-canvases))  # x_recons = sigmoid(canvas)
     print(y_recons.shape)
     B = A = int(np.sqrt(img_size))
-    prefix = './output/myattn_deploy3_withoutatten'
+    # prefix = './output/myattn_deploy3_withoutatten'
+    prefix = os.path.join(FLAGS.data_dir, 'myattn_deploy3_withoutatten')
 
     xtrain = xtrain[0:10,:];
     ytrain = ytrain [0:10, :];
@@ -78,6 +79,12 @@ if __name__ == '__main__':
 
             img[2 * B + 10:3 * B + 10, i * A:(i + 1) * A] = im;
             img[3*B+10:4*B+10, i * A:(i + 1) * A] = (np.reshape(xtrain[i, :], (B, A)) * 255).astype(np.uint8);
+
+            inp_im = np.reshape(ytrain[i, :], (B, A))*255;
+            inp_name = os.path.join(FLAGS.data_dir, 'inp_%d.png' % i)
+            out_name = os.path.join(FLAGS.data_dir, 'out_%d.png' % i)
+            cv2.imwrite(inp_name, inp_im)
+            cv2.imwrite(out_name, im)
 
         plt.matshow(img, cmap=plt.cm.hot)
         # you can merge using imagemagick, i.e. convert -delay
