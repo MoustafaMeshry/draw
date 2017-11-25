@@ -2,7 +2,7 @@ import os
 import tensorflow as tf
 import numpy as np
 import inspect
-import urllib.request
+# import urllib.request
 
 VGG_MEAN = [103.939, 116.779, 123.68]
 data = None

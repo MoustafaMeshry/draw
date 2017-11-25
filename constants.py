@@ -1,6 +1,7 @@
-batch_size = 100  # training minibatch size
+attention_flag = False
+batch_size = 100 # 1  # training minibatch size
 A, B = 28, 28 # image width, height
-img_size = B*A  # the canvas size
+img_size = B*A*3  # the canvas size
 enc_size = 256  # number of hidden units / output size in LSTM of the encoder
 dec_size = 256  # number of hidden units / output size in LSTM of the decoder
 read_n = 5  # read glimpse grid width/height

@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     direction = const.Direction.DOWN.value
     size = const.A
-    with_attention = True
+    with_attention = const.attention_flag
     save_path = os.path.join("./train/", 'simple_' + str(direction) + '_s' + str(size) + '_a' + str(with_attention));
     tf.flags.DEFINE_string("data_dir", save_path, "")
     tf.flags.DEFINE_boolean("read_attn", with_attention, "enable attention for reader")
@@ -56,37 +56,39 @@ if __name__ == '__main__':
     T, batch_size, img_size = canvases.shape
     y_recons = 1.0 / (1.0 + np.exp(-canvases))  # x_recons = sigmoid(canvas)
     print(y_recons.shape)
-    B = A = int(np.sqrt(img_size))
+    B = A = int(np.sqrt(img_size / 3))
     # prefix = './output/myattn_deploy3_withoutatten'
     prefix = os.path.join(FLAGS.data_dir, 'myattn_deploy3_withoutatten')
 
     xtrain = xtrain[0:10,:];
     ytrain = ytrain [0:10, :];
+    intensity_multiplier = 255  # 255
 
     for t in range(T):
         #img = xrecons_grid(X[t, :, :], B, A)
 
-        img = np.zeros((2*B + 10 + 2*B,xtrain.shape[0]*A))
+        img = np.zeros((2*B + 10 + 2*B,xtrain.shape[0]*A, 3))
         print(img.shape)
         for i in range(xtrain.shape[0]):
-            img[0:B, i * A:(i + 1) * A] = np.reshape(ytrain[i, :], (B, A))*255;
-            img[B+4:2*B+4, i * A:(i + 1) * A] = np.reshape(xtrain[i, :], (B, A))*255;
+            # print(A,B,A*B*3)
+            img[0:B, i * A:(i + 1) * A, :] = np.reshape(ytrain[i, :], (B, A, 3))*intensity_multiplier;
+            img[B+4:2*B+4, i * A:(i + 1) * A, :] = np.reshape(xtrain[i, :], (B, A, 3))*intensity_multiplier;
 
-            im = (np.reshape(y_recons[t, i, :], (B, A)) * 255).astype(np.uint8)
+            im = (np.reshape(y_recons[t, i, :], (B, A, 3)) * intensity_multiplier).astype(np.uint8)
             if(is_result_sharpen):
                 kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
                 im = cv2.filter2D(im, -1, kernel)
 
-            img[2 * B + 10:3 * B + 10, i * A:(i + 1) * A] = im;
-            img[3*B+10:4*B+10, i * A:(i + 1) * A] = (np.reshape(xtrain[i, :], (B, A)) * 255).astype(np.uint8);
+            img[2 * B + 10:3 * B + 10, i * A:(i + 1) * A, :] = im;
+            img[3*B+10:4*B+10, i * A:(i + 1) * A, :] = (np.reshape(xtrain[i, :], (B, A, 3)) * intensity_multiplier).astype(np.uint8);
 
-            inp_im = np.reshape(ytrain[i, :], (B, A))*255;
+            inp_im = np.reshape(ytrain[i, :], (B, A, 3))*intensity_multiplier;
             inp_name = os.path.join(FLAGS.data_dir, 'inp_%d.png' % i)
             out_name = os.path.join(FLAGS.data_dir, 'out_%d.png' % i)
             cv2.imwrite(inp_name, inp_im)
             cv2.imwrite(out_name, im)
 
-        plt.matshow(img, cmap=plt.cm.hot)
+        # plt.matshow(img, cmap=plt.cm.hot)
         # you can merge using imagemagick, i.e. convert -delay
         # 10 -loop 0 *.png mnist.gif
 

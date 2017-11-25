@@ -1,6 +1,8 @@
 import constants as const
 import numpy as np
 import pickle as pkl
+import custom_vgg19 as vgg19
+from synthesize import get_texture_loss, get_l2_norm_loss, get_total_variation
 import tensorflow as tf
 
 
@@ -28,14 +30,33 @@ class TextureLoss:
         self.filter_tf = tf.convert_to_tensor(filter_kernel)
         self.centroids_numpy = centroids
 
+        # VGG model for vgg_loss
+        self.texture_model = vgg19.Vgg19()
+        self.x_model = vgg19.Vgg19()
+
     def binary_crossentropy(self, t, o):
+        # t = tf.reshape(t, [self.batch_sz, 28, 28, 3])
+        # o = tf.reshape(o, [self.batch_sz, 28, 28, 3])
+        # means, variances = tf.nn.moments(t, axes=[1, 2], keep_dims=True)
+        # t = (t - means) / tf.sqrt(variances)
+        # means, variances = tf.nn.moments(o, axes=[1, 2], keep_dims=True)
+        # o = (o - means) / tf.sqrt(variances)
+        # t = tf.nn.sigmoid(t)
+        # o = tf.nn.sigmoid(o)
         return -(t * tf.log(o + const.eps) + (
                  1.0 - t) * tf.log(1.0 - o + const.eps))
 
-    def texture_filter_bank_loss(self, y, y_gt):
+    def l2_loss(self, y, y_gt):
+        l2_loss = tf.nn.l2_loss(y - y_gt)
+        return l2_loss
 
-        y = tf.reshape(y, [self.batch_sz, 28, 28, 1])
-        y_gt = tf.reshape(y_gt, [self.batch_sz, 28, 28, 1])
+    def texture_filter_bank_loss(self, y, y_gt):
+        y = tf.reshape(y, [self.batch_sz, 28, 28, 3])
+        y_gt = tf.reshape(y_gt, [self.batch_sz, 28, 28, 3])
+
+        # convert y & y_gt to grayscale using tf.rgb_grayscale(imgs)
+        y = tf.image.rgb_to_grayscale(y)
+        y_gt = tf.image.rgb_to_grayscale(y_gt)
 
         y_filter_response = im2filter_response(y, self.filter_tf)
         y_gt_filter_response = im2filter_response(y_gt, self.filter_tf)
@@ -50,6 +71,26 @@ class TextureLoss:
         # l2_loss = tf.reduce_mean(tf.nn.l2_loss(y_hist - y_gt_hist))
         l2_loss = tf.nn.l2_loss(y_hist - y_gt_hist)
         return l2_loss
+
+    def vgg_loss(self, y, y_gt):
+        y = tf.reshape(y, [self.batch_sz, 28, 28, 3])
+        y_gt = tf.reshape(y_gt, [self.batch_sz, 28, 28, 3])
+
+        TEXTURE_WEIGHT = 3.
+        NORM_WEIGHT = .1
+        TV_WEIGHT = .1
+        NORM_TERM = 6.
+
+        # FIXME this will only work for mini-batch of size 1 !!
+        self.texture_model.build(y_gt, [28,28,3])
+        self.x_model.build(y, [28,28,3])
+        unweighted_texture_loss = get_texture_loss(self.x_model, self.texture_model)
+        texture_loss = unweighted_texture_loss * TEXTURE_WEIGHT
+        # l2_loss = (get_l2_norm_loss(y) ** NORM_TERM) * NORM_WEIGHT
+        # tv_loss = get_total_variation(y, [1,28,28,3]) * TV_WEIGHT
+        l2_loss = 0
+        tv_loss = 0
+        return texture_loss + l2_loss + tv_loss
 
 
 def im2filter_response(imgs, filter_kernel_4d):
