@@ -55,6 +55,7 @@ if __name__ == '__main__':
     # visualize results
     T, batch_size, img_size = canvases.shape
     y_recons = 1.0 / (1.0 + np.exp(-canvases))  # x_recons = sigmoid(canvas)
+    # y_recons = canvases  # x_recons = sigmoid(canvas)
     print(y_recons.shape)
     B = A = int(np.sqrt(img_size / 3))
     # prefix = './output/myattn_deploy3_withoutatten'

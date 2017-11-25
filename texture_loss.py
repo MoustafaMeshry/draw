@@ -35,8 +35,10 @@ class TextureLoss:
         self.x_model = vgg19.Vgg19()
 
     def binary_crossentropy(self, t, o):
+        # FIXME i'm not yet sure the normalization code here is 100% correct
         # t = tf.reshape(t, [self.batch_sz, 28, 28, 3])
         # o = tf.reshape(o, [self.batch_sz, 28, 28, 3])
+        # # compute mean and variance for each color-channel for each image
         # means, variances = tf.nn.moments(t, axes=[1, 2], keep_dims=True)
         # t = (t - means) / tf.sqrt(variances)
         # means, variances = tf.nn.moments(o, axes=[1, 2], keep_dims=True)
