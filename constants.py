@@ -1,5 +1,5 @@
 attention_flag = False
-batch_size = 1 # 1  # training minibatch size
+batch_size = 100 # 1  # training minibatch size
 A, B = 28, 28 # image width, height
 img_size = B*A*3  # the canvas size
 enc_size = 256  # number of hidden units / output size in LSTM of the encoder

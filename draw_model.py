@@ -45,8 +45,8 @@ class DrawModel:
 
         # construct the unrolled computational graph
         for t in range(const.T):
-            # c_prev = tf.zeros((const.batch_size, const.img_size)) if t == 0 else self.cs[t - 1]
-            c_prev = tf.random_normal((const.batch_size, const.img_size), mean=0, stddev=1) if t == 0 else self.cs[t - 1]
+            c_prev = tf.zeros((const.batch_size, const.img_size)) if t == 0 else self.cs[t - 1]
+            # c_prev = tf.random_normal((const.batch_size, const.img_size), mean=0, stddev=1) if t == 0 else self.cs[t - 1]
             x_hat = self.y - tf.sigmoid(c_prev)  # error image
             # FIXME: be careful about whether y and c_prev are in the same range or not (e.g. normalized or not)
             # x_hat = self.y - c_prev  # error image
