@@ -28,6 +28,8 @@ class TextureLoss:
         self.filter_tf = tf.convert_to_tensor(filter_kernel)
         self.centroids_numpy = centroids
 
+    def gaussian_loss(self, t, o):
+        return tf.nn.l2_loss(o  - t)
     def binary_crossentropy(self, t, o):
         return -(t * tf.log(o + const.eps) + (
                  1.0 - t) * tf.log(1.0 - o + const.eps))
@@ -39,17 +41,23 @@ class TextureLoss:
 
         y_filter_response = im2filter_response(y, self.filter_tf)
         y_gt_filter_response = im2filter_response(y_gt, self.filter_tf)
-
-        y_hist = filter_response2histogram(
-            y_filter_response, self.centroids_numpy, self.num_bins,
-            self.batch_sz)
-        y_gt_hist = filter_response2histogram(
-            y_gt_filter_response, self.centroids_numpy, self.num_bins,
-            self.batch_sz)
-
-        # l2_loss = tf.reduce_mean(tf.nn.l2_loss(y_hist - y_gt_hist))
-        l2_loss = tf.nn.l2_loss(y_hist - y_gt_hist)
-        return l2_loss
+        l2_loss2 = tf.nn.l2_loss(y_filter_response  - y_gt_filter_response)
+        #print('Loss shape ',tf.shape(l2_loss2))
+        # y_hist = filter_response2histogram(
+        #     y_filter_response, self.centroids_numpy, self.num_bins,
+        #     self.batch_sz)
+        # y_gt_hist = filter_response2histogram(
+        #     y_gt_filter_response, self.centroids_numpy, self.num_bins,
+        #     self.batch_sz)
+        #
+        # # l2_loss = tf.reduce_mean(tf.nn.l2_loss(y_hist - y_gt_hist))
+        # #self.hist = y_hist;
+        # #l2_loss = tf.nn.l2_loss(y_hist - y_gt_hist)
+        #
+        # #l2_loss = tf.reduce_sum(tf.abs(y_hist - y_gt_hist))
+        # equ = tf.equal(y_hist , y_gt_hist);
+        #l2_loss = -tf.reduce_sum(equ )
+        return l2_loss2
 
 
 def im2filter_response(imgs, filter_kernel_4d):
