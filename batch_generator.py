@@ -47,6 +47,7 @@ class BatchGenerator:
                 current_img = self.img_list[ran_imgs[i]]
 
                 row,col = img_dims + pts[i,0:2] * np.subtract(current_img.shape[0:2], (3*img_dims,3*img_dims))
+                # row,col = pts[i,0:2] * np.subtract(current_img.shape[0:2], (img_dims,img_dims))
                 row,col = int(row),int(col)
 
                 #print(row,col,current_img.shape)

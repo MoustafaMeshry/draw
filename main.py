@@ -35,21 +35,24 @@ if __name__ == '__main__':
     y_recons = tf.nn.sigmoid(model.cs[-1])
     # y_recons = model.cs[-1]
 
-    variational_loss_weight = 1  # 1.0 / (10*2*8)
+    # variational_loss_weight = 1  # 1.0 / (10*2*8)
+    variational_loss_weight = 1  # 1.0 / 500  # 1.0 / (10*2*8)
 
     # Reconstruction loss
     # Cross entropy loss
-    Lx = tf.reduce_sum(filter_bank_loss.binary_crossentropy(model.y, y_recons), 1)
-    Lx = tf.reduce_mean(Lx)
-    
+    # Lx = tf.reduce_sum(filter_bank_loss.binary_crossentropy(model.y, y_recons), 1)
+    # Lx = tf.reduce_mean(Lx)
+
     # L2 loss
     # Lx = filter_bank_loss.l2_loss(model.y, y_recons)
+    # Lx2 = filter_bank_loss.l2_loss(model.y, y_recons)
 
     # # Filter-bank loss
     # Lx = filter_bank_loss.texture_filter_bank_loss(model.y, y_recons)
 
     # # Vgg loss
-    # Lx = filter_bank_loss.vgg_loss(model.y, y_recons)
+    Lx = filter_bank_loss.vgg_loss(model.y, y_recons)
+    # Lx2 = filter_bank_loss.vgg_loss(model.y, y_recons)
 
     # Variational loss (for latent variable z)
     Lz = model.Lz
@@ -59,6 +62,7 @@ if __name__ == '__main__':
     ## 1. Cost from image reconstruction (generation)
     ## 2. Cost from latent variable distribution
     cost = Lx + variational_loss_weight * Lz
+    # cost = 0.01 * Lx + Lx2 + variational_loss_weight * Lz
 
 
     # ==OPTIMIZER== #
@@ -74,6 +78,7 @@ if __name__ == '__main__':
 
     fetches = []
     fetches.extend([Lx, Lz, train_op])
+    # fetches.extend([Lx, Lz, train_op, Lx2])
     Lxs = [0] * const.train_iters
     Lzs = [0] * const.train_iters
 
@@ -96,11 +101,13 @@ if __name__ == '__main__':
         feed_dict = {model.x: xtrain, model.y: ytrain}
         results = sess.run(fetches, feed_dict)
         Lxs[i], Lzs[i], _ = results
+        # Lxs[i], Lzs[i], _, Lx2_val = results
         if i != 0 and i % 100 == 0:
             print("iter=%d : Lx: %f Lz: %f" % (i, Lxs[i], Lzs[i]))
+            # print("iter=%d : Lx: %f Lz: %f Lx2: %f" % (i, Lxs[i], Lzs[i], Lx2_val))
             if (i % 1000 == 0):
-                ckpt_file = os.path.join(FLAGS.data_dir, "drawmodel.ckpt")
-                print("Model saved in file: %s" % saver.save(sess, ckpt_file))
+                # ckpt_file = os.path.join(FLAGS.data_dir, "drawmodel.ckpt")
+                # print("Model saved in file: %s" % saver.save(sess, ckpt_file))
 
                 out_file = os.path.join(FLAGS.data_dir, "draw_data.npy")
                 np.save(out_file, [Lxs[:i], Lzs[:i]])

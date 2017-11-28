@@ -8,6 +8,10 @@ from scipy.misc import toimage
 
 # Return a numpy array of an image specified by its path
 def load_image(path):
+    # import cv2
+    # img = cv2.imread(path, 1) / 255.0
+    # return img, list(img.shape)
+
     # Load image [height, width, depth]
     img = skimage.io.imread(path) / 255.0
     assert (0 <= img).all() and (img <= 1.0).all()

@@ -1,6 +1,8 @@
 attention_flag = False
-batch_size = 100 # 1  # training minibatch size
-A, B = 28, 28 # image width, height
+batch_size = 1 # TODO for vgg_loss, this must be 1 (at least for now)
+# A, B = 28, 28 # image width, height
+# A, B = 50, 50 # image width, height
+A, B = 80, 80 # image width, height
 img_size = B*A*3  # the canvas size
 enc_size = 256  # number of hidden units / output size in LSTM of the encoder
 dec_size = 256  # number of hidden units / output size in LSTM of the decoder
@@ -11,14 +13,13 @@ T = 10  # MNIST generation sequence length
 learning_rate = 1e-3  # learning rate for optimizer
 eps = 1e-8  # epsilon for numerical stability
 
+vgg_model_path = '/fs/vulcan-scratch/mmeshry/DRAW/lib/weights/vgg19.npy'
+
 gpu_used = True
 if(gpu_used):
     train_iters = 10000
 else:
     train_iters = 1100
-
-
-
 
 from enum import Enum
 class Direction(Enum):

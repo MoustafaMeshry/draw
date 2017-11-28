@@ -31,8 +31,8 @@ class TextureLoss:
         self.centroids_numpy = centroids
 
         # VGG model for vgg_loss
-        self.texture_model = vgg19.Vgg19()
-        self.x_model = vgg19.Vgg19()
+        #self.texture_model = vgg19.Vgg19()
+        #self.x_model = vgg19.Vgg19()
 
     def binary_crossentropy(self, t, o):
         # FIXME i'm not yet sure the normalization code here is 100% correct
@@ -53,8 +53,8 @@ class TextureLoss:
         return l2_loss
 
     def texture_filter_bank_loss(self, y, y_gt):
-        y = tf.reshape(y, [self.batch_sz, 28, 28, 3])
-        y_gt = tf.reshape(y_gt, [self.batch_sz, 28, 28, 3])
+        y = tf.reshape(y, [self.batch_sz, const.B, const.A, 3])
+        y_gt = tf.reshape(y_gt, [self.batch_sz, const.B, const.A, 3])
 
         # convert y & y_gt to grayscale using tf.rgb_grayscale(imgs)
         y = tf.image.rgb_to_grayscale(y)
@@ -63,20 +63,22 @@ class TextureLoss:
         y_filter_response = im2filter_response(y, self.filter_tf)
         y_gt_filter_response = im2filter_response(y_gt, self.filter_tf)
 
-        y_hist = filter_response2histogram(
-            y_filter_response, self.centroids_numpy, self.num_bins,
-            self.batch_sz)
-        y_gt_hist = filter_response2histogram(
-            y_gt_filter_response, self.centroids_numpy, self.num_bins,
-            self.batch_sz)
+#         y_hist = filter_response2histogram(
+#             y_filter_response, self.centroids_numpy, self.num_bins,
+#             self.batch_sz)
+#         y_gt_hist = filter_response2histogram(
+#             y_gt_filter_response, self.centroids_numpy, self.num_bins,
+#             self.batch_sz)
 
         # l2_loss = tf.reduce_mean(tf.nn.l2_loss(y_hist - y_gt_hist))
-        l2_loss = tf.nn.l2_loss(y_hist - y_gt_hist)
+        # l2_loss = tf.nn.l2_loss(y_hist - y_gt_hist)
+        l2_loss = tf.nn.l2_loss(y_filter_response - y_gt_filter_response)
         return l2_loss
 
     def vgg_loss(self, y, y_gt):
-        y = tf.reshape(y, [self.batch_sz, 28, 28, 3])
-        y_gt = tf.reshape(y_gt, [self.batch_sz, 28, 28, 3])
+        assert self.batch_sz == 1, "Vgg_loss requires a batch size of 1"
+        y = tf.reshape(y, [self.batch_sz, const.B, const.A, 3])
+        y_gt = tf.reshape(y_gt, [self.batch_sz, const.B, const.A, 3])
 
         TEXTURE_WEIGHT = 3.
         NORM_WEIGHT = .1
@@ -84,9 +86,15 @@ class TextureLoss:
         NORM_TERM = 6.
 
         # FIXME this will only work for mini-batch of size 1 !!
-        self.texture_model.build(y_gt, [28,28,3])
-        self.x_model.build(y, [28,28,3])
-        unweighted_texture_loss = get_texture_loss(self.x_model, self.texture_model)
+        # self.texture_model.build(y_gt, [const.B,const.A,3], isBGR=True)
+        # self.x_model.build(y, [const.B,const.A,3], isBGR=True)
+        texture_model = vgg19.Vgg19()
+        x_model = vgg19.Vgg19()
+        texture_model.build(y_gt, [const.B,const.A,3], isBGR=True)
+        x_model.build(y, [const.B,const.A,3], isBGR=True)
+
+        # unweighted_texture_loss = get_texture_loss(self.x_model, self.texture_model)
+        unweighted_texture_loss = get_texture_loss(x_model, texture_model)
         texture_loss = unweighted_texture_loss * TEXTURE_WEIGHT
         # l2_loss = (get_l2_norm_loss(y) ** NORM_TERM) * NORM_WEIGHT
         # tv_loss = get_total_variation(y, [1,28,28,3]) * TV_WEIGHT

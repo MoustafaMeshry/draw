@@ -1,3 +1,4 @@
+import constants as const
 import os
 import tensorflow as tf
 import numpy as np
@@ -6,8 +7,9 @@ import inspect
 
 VGG_MEAN = [103.939, 116.779, 123.68]
 data = None
-dir_path = os.path.dirname(os.path.realpath(__file__))
-weights_name = os.path.abspath(dir_path + "/../lib/weights/vgg19.npy")
+# # dir_path = os.path.dirname(os.path.realpath(__file__))
+# dir_path = '/fs/vulcan-scratch/mmeshry/DRAW'
+# weights_name = os.path.abspath(dir_path + "/lib/weights/vgg19.npy")
 weights_url = "https://mega.nz/#!xZ8glS6J!MAnE91ND_WyfZ_8mvkuSa2YcA7q-1ehfSm-Q1fxOvvs"
 
 
@@ -16,9 +18,10 @@ class Vgg19:
         global data
 
         if vgg19_npy_path is None:
-            path = inspect.getfile(Vgg19)
-            path = os.path.abspath(os.path.join(path, os.pardir))
-            path = os.path.join(path, weights_name)
+            # path = inspect.getfile(Vgg19)
+            # path = os.path.abspath(os.path.join(path, os.pardir))
+            # path = os.path.join(path, weights_name)
+            path = const.vgg_model_path
 
             if os.path.exists(path):
                 vgg19_npy_path = path
@@ -36,14 +39,17 @@ class Vgg19:
         else:
             self.data_dict = data.item()
 
-    def build(self, rgb, shape):
+    def build(self, rgb, shape, isBGR=False):
         rgb_scaled = rgb * 255.0
         num_channels = shape[2]
         channel_shape = shape
         channel_shape[2] = 1
 
         # Convert RGB to BGR
-        red, green, blue = tf.split(axis=3, num_or_size_splits=3, value=rgb_scaled)
+        if isBGR:
+            blue, green, red = tf.split(axis=3, num_or_size_splits=3, value=rgb_scaled)
+        else:
+            red, green, blue = tf.split(axis=3, num_or_size_splits=3, value=rgb_scaled)
 
         assert red.get_shape().as_list()[1:] == channel_shape
         assert green.get_shape().as_list()[1:] == channel_shape
