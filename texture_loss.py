@@ -30,6 +30,14 @@ class TextureLoss:
 
     def gaussian_loss(self, t, o):
         return tf.nn.l2_loss(o  - t)
+
+    def mean_color_loss(self, t, o):
+        #print('mean shape ', o.shape)
+        reduced_o = tf.reduce_sum(o,axis=1);
+        reduced_t = tf.reduce_sum(t, axis=1);
+        #print('reduced_img  shape ', reduced_img .shape)
+        return tf.nn.l2_loss(reduced_o  - reduced_t)
+        #return tf.nn.l2_loss(o - t)
     def binary_crossentropy(self, t, o):
         return -(t * tf.log(o + const.eps) + (
                  1.0 - t) * tf.log(1.0 - o + const.eps))
