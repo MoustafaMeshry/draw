@@ -38,6 +38,9 @@ if __name__ == '__main__':
         for dir in range(4):
             save_path = os.path.join("./train/",
                                      'simple_d' + str(dir) + '_s' + str(size) + '_a' + str(with_attention));
+            #save_path = os.path.join("./train/",
+            #                         'tmp_simple_d' + str(direction) + '_s' + str(size) + '_a' + str(with_attention));
+
             FLAGS = tf.flags.FLAGS
             img_generator = batch_gen.BatchGenerator(const.batch_size, save_path)
 

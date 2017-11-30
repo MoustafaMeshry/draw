@@ -18,17 +18,18 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 if __name__ == '__main__':
     # load module
 
-    direction = const.Direction.DOWN.value
+    direction = const.Direction.LEFT.value
     size = const.A
     with_attention = False
-    save_path = os.path.join("./train/", 'simple_d' + str(direction) + '_s' + str(size) + '_a' + str(with_attention));
+    save_path = os.path.join("./train/",
+                             'simple_d' + str(direction) + '_s' + str(size) + '_a' + str(with_attention));
     tf.flags.DEFINE_string("data_dir", save_path, "")
     tf.flags.DEFINE_boolean("read_attn", with_attention, "enable attention for reader")
     tf.flags.DEFINE_boolean("write_attn", with_attention, "enable attention for writer")
     FLAGS = tf.flags.FLAGS
 
     is_result_sharpen = False
-    model = draw_model.DrawModel(FLAGS);
+    model = draw_model.DrawModel(with_attention,with_attention);
 
 
 
@@ -37,7 +38,7 @@ if __name__ == '__main__':
     tf.global_variables_initializer().run()
 
     # to restore from model, uncomment the next line
-    ckpt_file = os.path.join(FLAGS.data_dir, "drawmodel.ckpt")
+    ckpt_file = os.path.join(save_path, "drawmodel.ckpt")
     saver.restore(sess, ckpt_file)
 
 

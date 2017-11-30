@@ -42,6 +42,7 @@ class BatchGenerator:
             ran_imgs = np.random.randint(len(self.img_list), size=self.batch_size);
 
             pts = np.random.rand(self.batch_size,2)
+            #pts = np.ones((self.batch_size,2))* 0.2;
             #print('direction ', direction, const.Direction.UP.value)
             for i in range(self.batch_size):
                 current_img = self.img_list[ran_imgs[i]]
@@ -75,7 +76,7 @@ class BatchGenerator:
                 xtrain[i,:] = img_x.flatten();
                 ytrain[i, :] = img_y.flatten();
                 #print('Generating texture');
-        return xtrain,ytrain
+        return xtrain,xtrain
 
 
 if __name__ == '__main__':

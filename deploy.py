@@ -18,17 +18,18 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 if __name__ == '__main__':
     # load module
 
-    direction = const.Direction.DOWN.value
+    direction = const.Direction.LEFT.value
     size = const.A
     with_attention = False
-    save_path = os.path.join("./train/", 'simple_' + str(direction) + '_s' + str(size) + '_a' + str(with_attention));
+    save_path = os.path.join("./train/",
+                             'tmp_simple_d' + str(direction) + '_s' + str(size) + '_a' + str(with_attention)+'_openlab');
     tf.flags.DEFINE_string("data_dir", save_path, "")
     tf.flags.DEFINE_boolean("read_attn", with_attention, "enable attention for reader")
     tf.flags.DEFINE_boolean("write_attn", with_attention, "enable attention for writer")
     FLAGS = tf.flags.FLAGS
 
     is_result_sharpen = False
-    model = draw_model.DrawModel(FLAGS);
+    model = draw_model.DrawModel(with_attention,with_attention);
 
 
 
@@ -38,8 +39,8 @@ if __name__ == '__main__':
 
     # to restore from model, uncomment the next line
     ckpt_file = os.path.join(FLAGS.data_dir, "drawmodel.ckpt")
+    print(ckpt_file )
     saver.restore(sess, ckpt_file)
-
 
     # enter images
     img_generator = batch_gen.BatchGenerator(const.batch_size, FLAGS.data_dir)
@@ -57,7 +58,7 @@ if __name__ == '__main__':
     y_recons = 1.0 / (1.0 + np.exp(-canvases))  # x_recons = sigmoid(canvas)
     print(y_recons.shape)
     B = A = int(np.sqrt(img_size))
-    prefix = './output/myattn_deploy3_withoutatten'
+    prefix = './output/myattn_deploy3_withoutattenlc'
 
     xtrain = xtrain[0:10,:];
     ytrain = ytrain [0:10, :];
