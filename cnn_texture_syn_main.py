@@ -15,7 +15,7 @@ from synthesize import *
 
 # Model hyperparams
 TEXTURE_LAYERS = ['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1']
-EPOCHS = 3000
+EPOCHS = 6000
 LEARNING_RATE = .02
 TOTAL_VARIATION_SMOOTHING = 1.5
 NORM_TERM = 6.
@@ -23,7 +23,7 @@ NORM_TERM = 6.
 # Loss term weights
 TEXTURE_WEIGHT = 3.
 NORM_WEIGHT = .1
-TV_WEIGHT = .1
+TV_WEIGHT = .1  # TODO: Meshry: I believe results with TV_WEIGHT=0.5 are better
 
 # Default image paths
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -82,12 +82,14 @@ if __name__ == '__main__':
 
             # with tf.name_scope('vgg_texture'):
             #     texture_model = vgg19.Vgg19()
-            texture_model.build(texture, image_shape[1:], isBGR=True)
+            # texture_model.build(texture, image_shape[1:], isBGR=True)
+            texture_model.build(texture, image_shape, isBGR=True)
             # texture_model.build(255 * texture, image_shape[1:])
 
             # with tf.name_scope('vgg_x'):
             #     x_model = vgg19.Vgg19()
-            x_model.build(noise, image_shape[1:], isBGR=False)
+            # x_model.build(noise, image_shape[1:], isBGR=False)
+            x_model.build(noise, image_shape, isBGR=False)
 
             # Loss functions
             with tf.name_scope('loss'):

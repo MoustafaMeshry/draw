@@ -47,10 +47,9 @@ print("Printing log to %s" % log_path)
 def convert_to_gram(filter_maps):
     # Get the dimensions of the filter maps to reshape them into two dimenions
     dimension = filter_maps.get_shape().as_list()
-    reshaped_maps = tf.reshape(filter_maps, [-1, dimension[1] * dimension[2], dimension[3]])
+    reshaped_maps = tf.reshape(filter_maps, [dimension[1] * dimension[2], dimension[3]])
 
     # Compute the inner product to get the gram matrix
-    # TODO: Meshry: I believe matmul would still work correctly with mini-batches
     if dimension[1] * dimension[2] > dimension[3]:
         return tf.matmul(reshaped_maps, reshaped_maps, transpose_a=True)
     else:
@@ -60,17 +59,14 @@ def convert_to_gram(filter_maps):
 # Compute the L2-norm divided by squared number of dimensions
 def get_l2_norm_loss(diffs):
     shape = diffs.get_shape().as_list()
-    size = reduce(lambda x, y: x * y, shape[1:]) ** 2
-    batch_sz = shape[0]
+    size = reduce(lambda x, y: x * y, shape) ** 2
     sum_of_squared_diffs = tf.reduce_sum(tf.square(diffs))
-    return sum_of_squared_diffs / (1.0 * size * batch_sz)
+    return sum_of_squared_diffs / size
 
 
 # Compute texture loss given a variable image (x) and a texture image (s)
 def get_texture_loss(x, s):
     with tf.name_scope('get_style_loss'):
-        # FIXME: the next line "MAY" need to be converted to tensorflow, as DRAW input is TF tensors, not python arrays!
-        # And, if you changed it, remove "tf.convert_to_tensor" a couple of lines below
         texture_layer_losses = [get_texture_loss_for_layer(x, s, l) for l in TEXTURE_LAYERS]
         texture_weights = tf.constant([1. / len(texture_layer_losses)] * len(texture_layer_losses), tf.float32)
         weighted_layer_losses = tf.multiply(texture_weights, tf.convert_to_tensor(texture_layer_losses))
@@ -90,28 +86,26 @@ def get_texture_loss_for_layer(x, s, l):
         assert_equal_shapes = tf.assert_equal(x_layer_maps.get_shape(), t_layer_maps.get_shape())
         with tf.control_dependencies([assert_equal_shapes]):
             # Compute and return the normalized gram loss using the gram matrices
-            shape = x_layer_maps.get_shape().as_list()[1:]
-            batch_sz = shape[0]
+            shape = x_layer_maps.get_shape().as_list()
             size = reduce(lambda a, b: a * b, shape) ** 2
             gram_loss = get_l2_norm_loss(x_layer_gram - t_layer_gram)
-            return gram_loss / (1.0 * size * batch_sz)
+            return gram_loss / size
 
 
 # Compute total variation regularization loss term given a variable image (x) and its shape
 def get_total_variation(x, shape):
     with tf.name_scope('get_total_variation'):
         # Get the dimensions of the variable image
-        batch_sz = shape[0]
         height = shape[1]
         width = shape[2]
-        size = reduce(lambda a, b: a * b, shape[1:]) ** 2
+        size = reduce(lambda a, b: a * b, shape) ** 2
 
         # Disjoin the variable image and evaluate the total variation
         x_cropped = x[:, :height - 1, :width - 1, :]
         left_term = tf.square(x[:, 1:, :width - 1, :] - x_cropped)
         right_term = tf.square(x[:, :height - 1, 1:, :] - x_cropped)
         smoothed_terms = tf.pow(left_term + right_term, TOTAL_VARIATION_SMOOTHING / 2.)
-        return tf.reduce_sum(smoothed_terms) / (1.0 * size * batch_sz)
+        return tf.reduce_sum(smoothed_terms) / size
 
 
 # Parse arguments and assign them to their respective global variables

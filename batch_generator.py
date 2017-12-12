@@ -40,6 +40,7 @@ class BatchGenerator:
                 np.random.seed(10);
 
             ran_imgs = np.random.randint(len(self.img_list), size=self.batch_size);
+            # ran_imgs = [4]  # Avoid randomness; choose a specific image
 
             pts = np.random.rand(self.batch_size,2)
             #print('direction ', direction, const.Direction.UP.value)

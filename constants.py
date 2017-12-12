@@ -2,7 +2,7 @@ attention_flag = False
 batch_size = 100 # TODO for vgg_loss, this must be 1 (at least for now)
 A, B = 28, 28 # image width, height
 # A, B = 50, 50 # image width, height
-# A, B = 80, 80 # image width, height
+# A, B = 128, 128 # image width, height
 img_size = B*A*3  # the canvas size
 enc_size = 256  # number of hidden units / output size in LSTM of the encoder
 dec_size = 256  # number of hidden units / output size in LSTM of the decoder
@@ -17,7 +17,7 @@ vgg_model_path = '/fs/vulcan-scratch/mmeshry/DRAW/lib/weights/vgg19.npy'
 
 gpu_used = True
 if(gpu_used):
-    train_iters = 10000
+    train_iters = 20000
 else:
     train_iters = 1100
 

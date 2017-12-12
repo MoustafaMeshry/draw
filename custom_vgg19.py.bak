@@ -41,9 +41,9 @@ class Vgg19:
 
     def build(self, rgb, shape, isBGR=False):
         rgb_scaled = rgb * 255.0
-        num_channels = shape[3]
+        num_channels = shape[2]
         channel_shape = shape
-        channel_shape[3] = 1
+        channel_shape[2] = 1
 
         # Convert RGB to BGR
         if isBGR:
@@ -51,9 +51,9 @@ class Vgg19:
         else:
             red, green, blue = tf.split(axis=3, num_or_size_splits=3, value=rgb_scaled)
 
-        assert red.get_shape().as_list() == channel_shape
-        assert green.get_shape().as_list() == channel_shape
-        assert blue.get_shape().as_list() == channel_shape
+        assert red.get_shape().as_list()[1:] == channel_shape
+        assert green.get_shape().as_list()[1:] == channel_shape
+        assert blue.get_shape().as_list()[1:] == channel_shape
 
         bgr = tf.concat(axis=3, values=[
             blue - VGG_MEAN[0],
@@ -61,8 +61,8 @@ class Vgg19:
             red - VGG_MEAN[2],
         ])
 
-        shape[3] = num_channels
-        assert bgr.get_shape().as_list() == shape
+        shape[2] = num_channels
+        assert bgr.get_shape().as_list()[1:] == shape
 
         self.conv1_1 = self.conv_layer(bgr, "conv1_1")
         self.conv1_2 = self.conv_layer(self.conv1_1, "conv1_2")

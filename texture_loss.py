@@ -99,7 +99,6 @@ class TextureLoss:
         return l2_loss
 
     def vgg_loss(self, y, y_gt):
-        assert self.batch_sz == 1, "Vgg_loss requires a batch size of 1"
         y = tf.reshape(y, [self.batch_sz, const.B, const.A, 3])
         y_gt = tf.reshape(y_gt, [self.batch_sz, const.B, const.A, 3])
 
@@ -113,8 +112,8 @@ class TextureLoss:
         # self.x_model.build(y, [const.B,const.A,3], isBGR=True)
         texture_model = vgg19.Vgg19()
         x_model = vgg19.Vgg19()
-        texture_model.build(y_gt, [const.B,const.A,3], isBGR=True)
-        x_model.build(y, [const.B,const.A,3], isBGR=True)
+        texture_model.build(y_gt, [self.batch_sz,const.B,const.A,3], isBGR=True)
+        x_model.build(y, [self.batch_sz,const.B,const.A,3], isBGR=True)
 
         # unweighted_texture_loss = get_texture_loss(self.x_model, self.texture_model)
         unweighted_texture_loss = get_texture_loss(x_model, texture_model)
