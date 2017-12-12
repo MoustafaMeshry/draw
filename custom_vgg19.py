@@ -2,7 +2,6 @@ import constants as const
 import os
 import tensorflow as tf
 import numpy as np
-import inspect
 # import urllib.request
 
 VGG_MEAN = [103.939, 116.779, 123.68]
@@ -10,7 +9,8 @@ data = None
 # # dir_path = os.path.dirname(os.path.realpath(__file__))
 # dir_path = '/fs/vulcan-scratch/mmeshry/DRAW'
 # weights_name = os.path.abspath(dir_path + "/lib/weights/vgg19.npy")
-weights_url = "https://mega.nz/#!xZ8glS6J!MAnE91ND_WyfZ_8mvkuSa2YcA7q-1ehfSm-Q1fxOvvs"
+weights_url = ("https://mega.nz/#!xZ8glS6J!MAnE91ND_WyfZ_8mvkuSa2YcA7q-"
+               "1ehfSm-Q1fxOvvs")
 
 
 class Vgg19:
@@ -28,7 +28,7 @@ class Vgg19:
             else:
                 print("VGG19 weights were not found in the project directory!")
                 print("Please download the .npy file from: %s" % weights_url)
-                print("The file should be placed as '%s'" % weights_name)
+                # print("The file should be placed as '%s'" % weights_name)
                 exit(0)
 
         if data is None:
@@ -47,9 +47,11 @@ class Vgg19:
 
         # Convert RGB to BGR
         if isBGR:
-            blue, green, red = tf.split(axis=3, num_or_size_splits=3, value=rgb_scaled)
+            blue, green, red = tf.split(axis=3, num_or_size_splits=3,
+                                        value=rgb_scaled)
         else:
-            red, green, blue = tf.split(axis=3, num_or_size_splits=3, value=rgb_scaled)
+            red, green, blue = tf.split(axis=3, num_or_size_splits=3,
+                                        value=rgb_scaled)
 
         assert red.get_shape().as_list() == channel_shape
         assert green.get_shape().as_list() == channel_shape
@@ -92,12 +94,12 @@ class Vgg19:
         self.data_dict = None
 
     def avg_pool(self, bottom, name):
-        return tf.nn.avg_pool(bottom,
-            ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name=name)
+        return tf.nn.avg_pool(bottom, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],
+                              padding='SAME', name=name)
 
     def max_pool(self, bottom, name):
-        return tf.nn.max_pool(bottom,
-            ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name=name)
+        return tf.nn.max_pool(bottom, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],
+                              padding='SAME', name=name)
 
     def conv_layer(self, bottom, name):
         with tf.variable_scope(name):

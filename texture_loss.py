@@ -31,8 +31,8 @@ class TextureLoss:
         self.centroids_numpy = centroids
 
         # VGG model for vgg_loss
-        #self.texture_model = vgg19.Vgg19()
-        #self.x_model = vgg19.Vgg19()
+        # self.texture_model = vgg19.Vgg19()
+        # self.x_model = vgg19.Vgg19()
 
     def binary_crossentropy(self, t, o):
         # FIXME i'm not yet sure the normalization code here is 100% correct
@@ -83,18 +83,19 @@ class TextureLoss:
         y_r, y_g, y_b = tf.split(y, axis=3, num_or_size_splits=3)
         y_gt_r, y_gt_g, y_gt_b = tf.split(y_gt, axis=3, num_or_size_splits=3)
 
-        y_r_resp= im2filter_response(y_r, self.filter_tf)
-        y_gt_r_resp= im2filter_response(y_gt_r, self.filter_tf)
-        y_g_resp= im2filter_response(y_g, self.filter_tf)
-        y_gt_g_resp= im2filter_response(y_gt_g, self.filter_tf)
-        y_b_resp= im2filter_response(y_b, self.filter_tf)
-        y_gt_b_resp= im2filter_response(y_gt_b, self.filter_tf)
+        y_r_resp = im2filter_response(y_r, self.filter_tf)
+        y_gt_r_resp = im2filter_response(y_gt_r, self.filter_tf)
+        y_g_resp = im2filter_response(y_g, self.filter_tf)
+        y_gt_g_resp = im2filter_response(y_gt_g, self.filter_tf)
+        y_b_resp = im2filter_response(y_b, self.filter_tf)
+        y_gt_b_resp = im2filter_response(y_gt_b, self.filter_tf)
 
         l2_loss_red = tf.nn.l2_loss(y_r_resp - y_gt_r_resp)
         l2_loss_green = tf.nn.l2_loss(y_g_resp - y_gt_g_resp)
         l2_loss_blue = tf.nn.l2_loss(y_b_resp - y_gt_b_resp)
 
-        l2_loss = (l2_loss_red + l2_loss_green + l2_loss_blue + l2_loss_gray_scale) / 4
+        l2_loss = (l2_loss_red + l2_loss_green + l2_loss_blue +
+                   l2_loss_gray_scale) / 4
         # l2_loss = (l2_loss_red + l2_loss_green + l2_loss_blue)
         return l2_loss
 
@@ -112,10 +113,12 @@ class TextureLoss:
         # self.x_model.build(y, [const.B,const.A,3], isBGR=True)
         texture_model = vgg19.Vgg19()
         x_model = vgg19.Vgg19()
-        texture_model.build(y_gt, [self.batch_sz,const.B,const.A,3], isBGR=True)
-        x_model.build(y, [self.batch_sz,const.B,const.A,3], isBGR=True)
+        texture_model.build(y_gt, [self.batch_sz, const.B, const.A, 3],
+                            isBGR=True)
+        x_model.build(y, [self.batch_sz, const.B, const.A, 3], isBGR=True)
 
-        # unweighted_texture_loss = get_texture_loss(self.x_model, self.texture_model)
+        # unweighted_texture_loss = get_texture_loss(self.x_model,
+        #                                            self.texture_model)
         unweighted_texture_loss = get_texture_loss(x_model, texture_model)
         texture_loss = unweighted_texture_loss * TEXTURE_WEIGHT
         l2_loss = (get_l2_norm_loss(y) ** NORM_TERM) * NORM_WEIGHT
@@ -127,18 +130,19 @@ class TextureLoss:
     def mean_color_loss(self, y, y_gt):
         y = tf.reshape(y, [self.batch_sz, const.B, const.A, 3])
         y_gt = tf.reshape(y_gt, [self.batch_sz, const.B, const.A, 3])
-        y_rgb_means = tf.reduce_mean(y, axis=[1,2])
-        y_gt_rgb_means = tf.reduce_mean(y_gt, axis=[1,2])
+        y_rgb_means = tf.reduce_mean(y, axis=[1, 2])
+        y_gt_rgb_means = tf.reduce_mean(y_gt, axis=[1, 2])
         color_loss_rgb = tf.nn.l2_loss(y_rgb_means - y_gt_rgb_means)
         # diff_square = tf.square(y_rgb_means - y_gt_rgb_means)
         # color_loss = tf.reduce_sum(diff_square)
 
-        color_loss_rgbMean = tf.nn.l2_loss(tf.reduce_mean(tf.square(y_gt - y), axis=[1,2,3]))
+        color_loss_rgbMean = tf.nn.l2_loss(tf.reduce_mean(tf.square(y_gt - y),
+                                           axis=[1, 2, 3]))
 
         color_loss = color_loss_rgb + color_loss_rgbMean
         return color_loss
 
-    # Compute total variation regularization loss term given a variable image (x) and its shape
+    # Compute TV regularization term given a variable image (x) and its shape
     def total_variation(self, x):
         # total_variation_smoothing = 1.5
         eps = 1e-8
@@ -160,7 +164,8 @@ class TextureLoss:
         # smoothed_terms = tf.sqrt(left_term + right_term)
         # return tf.reduce_sum(smoothed_terms) / size
 
-        # Meshry: add eps due to the unstable gradient of sqrt at 0, which gives NaN!
+        # Meshry: add eps due to the unstable gradient of sqrt at 0, which
+        # gives NaN!
         # tv_batch = tf.sqrt(left_term + right_term + eps)
         tv_batch = tf.pow(left_term + right_term + eps, 0.75)
         return tf.reduce_sum(tv_batch)
@@ -182,7 +187,7 @@ def im2filter_response(imgs, filter_kernel_4d):
     filter_kernel_4d = filter_kernel_4d[flip]
 
     # num_channels = filter_kernel_4d.get_shape()[-1]
-    mini_batch_shape = imgs.get_shape()
+    # mini_batch_shape = imgs.get_shape()
     # [n_batch, height, width, _] = mini_batch_shape
 
     response = tf.nn.conv2d(imgs, filter_kernel_4d, strides=[1, 1, 1, 1],

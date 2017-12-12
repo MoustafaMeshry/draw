@@ -1,15 +1,13 @@
 #!/usr/bin/python3
 # Mohamed K. Eid (mohamedkeid@gmail.com)
-# Description: TensorFlow implementation of "Texture-Synthesis Using Convolutional Neural Networks"
+# Description: TensorFlow implementation of "Texture-Synthesis Using
+#              Convolutional Neural Networks"
 
 import argparse
-import custom_vgg19 as vgg19
 import logging
-import numpy as np
 import os
 import tensorflow as tf
 import time
-import utils
 from functools import reduce
 
 # Model hyperparams
@@ -43,14 +41,16 @@ logging.basicConfig(filename=log_path, level=logging.INFO)
 print("Printing log to %s" % log_path)
 
 
-# Given an activated filter maps of any particular layer, return its respected gram matrix
+# Given an activated filter maps of any particular layer, return its respected
+# gram matrix
 def convert_to_gram(filter_maps):
     # Get the dimensions of the filter maps to reshape them into two dimenions
     dimension = filter_maps.get_shape().as_list()
-    reshaped_maps = tf.reshape(filter_maps, [-1, dimension[1] * dimension[2], dimension[3]])
+    reshaped_maps = tf.reshape(filter_maps, [-1, dimension[1] * dimension[2],
+                                             dimension[3]])
 
     # Compute the inner product to get the gram matrix
-    # TODO: Meshry: I believe matmul would still work correctly with mini-batches
+    # TODO: Meshry: matmul would still work correctly with mini-batches, right?
     if dimension[1] * dimension[2] > dimension[3]:
         return tf.matmul(reshaped_maps, reshaped_maps, transpose_a=True)
     else:
@@ -69,27 +69,34 @@ def get_l2_norm_loss(diffs):
 # Compute texture loss given a variable image (x) and a texture image (s)
 def get_texture_loss(x, s):
     with tf.name_scope('get_style_loss'):
-        # FIXME: the next line "MAY" need to be converted to tensorflow, as DRAW input is TF tensors, not python arrays!
-        # And, if you changed it, remove "tf.convert_to_tensor" a couple of lines below
-        texture_layer_losses = [get_texture_loss_for_layer(x, s, l) for l in TEXTURE_LAYERS]
-        texture_weights = tf.constant([1. / len(texture_layer_losses)] * len(texture_layer_losses), tf.float32)
-        weighted_layer_losses = tf.multiply(texture_weights, tf.convert_to_tensor(texture_layer_losses))
+        # FIXME: the next line "MAY" need to be converted to tensorflow,
+        # as DRAW input is TF tensors, not python arrays!  And, if you change
+        # it, remove "tf.convert_to_tensor" a couple of lines below
+        texture_layer_losses = [get_texture_loss_for_layer(x, s, l) for l in
+                                TEXTURE_LAYERS]
+        texture_weights = tf.constant([1. / len(texture_layer_losses)] *
+                                      len(texture_layer_losses), tf.float32)
+        weighted_layer_losses = tf.multiply(
+                texture_weights, tf.convert_to_tensor(texture_layer_losses))
         return tf.reduce_sum(weighted_layer_losses)
 
 
-# Compute style loss for a layer (l) given the variable image (x) and the style image (s)
+# Compute style loss for a layer (l) given the variable image (x) and the
+# style image (s)
 def get_texture_loss_for_layer(x, s, l):
     with tf.name_scope('get_style_loss_for_layer'):
-        # Compute gram matrices using the activated filter maps of the art and generated images
+        # Compute gram matrices using the activated filter maps of the art and
+        # generated images
         x_layer_maps = getattr(x, l)
         t_layer_maps = getattr(s, l)
         x_layer_gram = convert_to_gram(x_layer_maps)
         t_layer_gram = convert_to_gram(t_layer_maps)
 
         # Make sure the feature map dimensions are the same
-        assert_equal_shapes = tf.assert_equal(x_layer_maps.get_shape(), t_layer_maps.get_shape())
+        assert_equal_shapes = tf.assert_equal(x_layer_maps.get_shape(),
+                                              t_layer_maps.get_shape())
+        # Compute and return the normalized gram loss using the gram matrices
         with tf.control_dependencies([assert_equal_shapes]):
-            # Compute and return the normalized gram loss using the gram matrices
             shape = x_layer_maps.get_shape().as_list()[1:]
             batch_sz = shape[0]
             size = reduce(lambda a, b: a * b, shape) ** 2
@@ -97,7 +104,8 @@ def get_texture_loss_for_layer(x, s, l):
             return gram_loss / (1.0 * size * batch_sz)
 
 
-# Compute total variation regularization loss term given a variable image (x) and its shape
+# Compute total variation regularization loss term given a variable image (x)
+# and its shape
 def get_total_variation(x, shape):
     with tf.name_scope('get_total_variation'):
         # Get the dimensions of the variable image
@@ -110,7 +118,8 @@ def get_total_variation(x, shape):
         x_cropped = x[:, :height - 1, :width - 1, :]
         left_term = tf.square(x[:, 1:, :width - 1, :] - x_cropped)
         right_term = tf.square(x[:, :height - 1, 1:, :] - x_cropped)
-        smoothed_terms = tf.pow(left_term + right_term, TOTAL_VARIATION_SMOOTHING / 2.)
+        smoothed_terms = tf.pow(left_term + right_term,
+                                TOTAL_VARIATION_SMOOTHING / 2.)
         return tf.reduce_sum(smoothed_terms) / (1.0 * size * batch_sz)
 
 
@@ -120,84 +129,12 @@ def parse_args():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("texture",
-        help="path to the image you'd like to resample")
-    parser.add_argument("--output",
-        default=OUT_PATH,
+                        help="path to the image you'd like to resample")
+    parser.add_argument(
+        "--output", default=OUT_PATH,
         help="path to where the generated image will be created")
     args = parser.parse_args()
 
     # Assign image paths from the arg parsing
     TEXTURE_PATH = os.path.realpath(args.texture)
     OUT_PATH = os.path.realpath(args.output)
-
-
-# with tf.Session() as sess:
-#     parse_args()
-# 
-#     # Initialize and process art image to be used for our texture
-#     texture, image_shape = utils.load_image(TEXTURE_PATH)
-#     image_shape = [1] + image_shape
-#     texture = texture.reshape(image_shape).astype(np.float32)
-# 
-#     # Initialize variable image that'll become our final output as random noise
-#     noise_init = tf.truncated_normal(image_shape, mean=.5, stddev=.1)
-#     noise = tf.Variable(noise_init, dtype=tf.float32)
-# 
-#     with tf.name_scope('vgg_texture'):
-#         texture_model = vgg19.Vgg19()
-#         texture_model.build(texture, image_shape[1:])
-# 
-#     with tf.name_scope('vgg_x'):
-#         x_model = vgg19.Vgg19()
-#         x_model.build(noise, image_shape[1:])
-# 
-#     # Loss functions
-#     with tf.name_scope('loss'):
-#         # Texture
-#         if TEXTURE_WEIGHT is 0:
-#             texture_loss = tf.constant(0.)
-#         else:
-#             unweighted_texture_loss = get_texture_loss(x_model, texture_model)
-#             texture_loss = unweighted_texture_loss * TEXTURE_WEIGHT
-# 
-#         # Norm regularization
-#         if NORM_WEIGHT is 0:
-#             norm_loss = tf.constant(0.)
-#         else:
-#             norm_loss = (get_l2_norm_loss(noise) ** NORM_TERM) * NORM_WEIGHT
-# 
-#         # Total variation denoising
-#         if TV_WEIGHT is 0:
-#             tv_loss = tf.constant(0.)
-#         else:
-#             tv_loss = get_total_variation(noise, image_shape) * TV_WEIGHT
-# 
-#         # Total loss
-#         total_loss = texture_loss + norm_loss + tv_loss
-# 
-#     # Update image
-#     with tf.name_scope('update_image'):
-#         optimizer = tf.train.AdamOptimizer(LEARNING_RATE)
-#         grads = optimizer.compute_gradients(total_loss, [noise])
-#         clipped_grads = [(tf.clip_by_value(grad, -1., 1.), var) for grad, var in grads]
-#         update_image = optimizer.apply_gradients(clipped_grads)
-# 
-#     # Train
-#     logging.info("Initializing variables and beginning training..")
-#     sess.run(tf.global_variables_initializer())
-#     start_time = time.time()
-#     for i in range(EPOCHS):
-#         _, loss = sess.run([update_image, total_loss])
-#         if PRINT_TRAINING_STATUS and i % PRINT_N == 0:
-#             logging.info("Epoch %04d | Loss %.03f" % (i, loss))
-# 
-#     # FIN
-#     elapsed = time.time() - start_time
-#     logging.info("Training complete. The session took %.2f seconds to complete." % elapsed)
-#     logging.info("Rendering final image and closing TensorFlow session..")
-# 
-#     # Render the image after making sure the repo's dedicated output dir exists
-#     out_dir = os.path.dirname(os.path.realpath(__file__)) + '/../output/'
-#     if not os.path.isdir(out_dir):
-#         os.makedirs(out_dir)
-#     utils.render_img(sess, noise, save=True, out_path=OUT_PATH)

@@ -1,5 +1,4 @@
 import numpy as np
-import os
 import skimage
 import skimage.io
 import skimage.transform
@@ -46,7 +45,7 @@ def load_image2(path, height=None, width=None):
     return skimage.transform.resize(img, (ny, nx))
 
 
-# Render the generated image given a tensorflow session and a variable image (x)
+# Render the generated image given a tensorflow session and a variable img (x)
 def render_img(session, x, save=False, out_path=None):
     shape = x.get_shape().as_list()
     img = np.clip(session.run(x), 0, 1)
