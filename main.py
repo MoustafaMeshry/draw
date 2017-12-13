@@ -46,12 +46,12 @@ if __name__ == '__main__':
 
     #Lx = filter_bank_loss.gaussian_loss(model.y, y_recons)  # reconstruction term
 
-    Lx = filter_bank_loss.mean_color_loss(model.y, y_recons)  # reconstruction term
+    #Lx = filter_bank_loss.mean_color_loss(model.y, y_recons)  # reconstruction term
 
     Lz = model.Lz
 
 
-    Lc = filter_bank_loss.texture_filter_bank_loss(model.y, y_recons)  # reconstruction term
+    Lx = filter_bank_loss.texture_filter_bank_loss(model.y, y_recons)  # reconstruction term
     #hist = filter_bank_loss.hist;
     #Lc = Lc;
 
@@ -61,8 +61,8 @@ if __name__ == '__main__':
     ## 2. Cost from latent variable distribution
 
 
-    cost1 = Lx
-    cost2 = Lz + Lc
+    cost1 = Lx + Lz
+    #cost2 = Lz + Lc
     #print(tf.shape(Lc))
     #print(tf.shape(Lz))
     #print(tf.shape(Lx))
@@ -72,26 +72,26 @@ if __name__ == '__main__':
     learning_rate = 1e-3
     print('learning_rate ',learning_rate )
     optimizer1 = tf.train.AdamOptimizer(learning_rate , beta1=0.5)
-    optimizer2 = tf.train.AdamOptimizer(learning_rate, beta1=0.5)
+    #optimizer2 = tf.train.AdamOptimizer(learning_rate, beta1=0.5)
 
     grads1 = optimizer1.compute_gradients(cost1)
-    grads2 = optimizer2.compute_gradients(cost2)
+    #grads2 = optimizer2.compute_gradients(cost2)
 
     for i, (g, v) in enumerate(grads1):
         if g is not None:
             grads1[i] = (tf.clip_by_norm(g, 5), v)
     train_op1 = optimizer1.apply_gradients(grads1)
 
-    for i, (g, v) in enumerate(grads2 ):
-        if g is not None:
-            grads2[i] = (tf.clip_by_norm(g, 5), v)
-    train_op2 = optimizer2.apply_gradients(grads2)
+    #for i, (g, v) in enumerate(grads2 ):
+    #    if g is not None:
+    #        grads2[i] = (tf.clip_by_norm(g, 5), v)
+    #train_op2 = optimizer2.apply_gradients(grads2)
     # ==RUN TRAINING== #
 
     fetches1 = []
-    fetches1.extend([Lx, Lz,Lc, train_op1])
-    fetches2 = []
-    fetches2.extend([Lx, Lz, Lc, train_op2])
+    fetches1.extend([Lx, Lz ,train_op1])
+    #fetches2 = []
+    #fetches2.extend([Lx, Lz, Lc, train_op2])
     #fetches.extend([Lx, Lz, train_op])
     Lxs = [0] * const.train_iters
     Lzs = [0] * const.train_iters
@@ -121,16 +121,16 @@ if __name__ == '__main__':
         feed_dict = {model.x: xtrain, model.y: ytrain}
 
         results = sess.run(fetches1, feed_dict)
-        Lxs[i], Lzs[i], lc ,_ = results
-        print("Fet1 iter=%d : Lx: %f Lz: %f  Lc %f" % (i, Lxs[i], Lzs[i], lc))
+        Lxs[i], Lzs[i] ,_ = results
+        print("Fet1 iter=%d : Lx: %f Lz: %f" % (i, Lxs[i], Lzs[i]))
 
-        results = sess.run(fetches2, feed_dict)
-        Lxs[i], Lzs[i], lc, _ = results
-        print("Fet2 iter=%d : Lx: %f Lz: %f  Lc %f" % (i, Lxs[i], Lzs[i], lc))
+        #results = sess.run(fetches2, feed_dict)
+        #Lxs[i], Lzs[i], lc, _ = results
+        #print("Fet2 iter=%d : Lx: %f Lz: %f  Lc %f" % (i, Lxs[i], Lzs[i], lc))
 
         #Lxs[i], Lzs[i],_ = results
         #print("iter=%d : Lx: %f Lz: %f " % (i, Lxs[i], Lzs[i]))
-        if i != 0 and i % 100 == 0:
+        if i != 0 and i % 2000 == 0:
 
             #if (not const.gpu_used):
             m,s,logs = sess.run([mus ,sigmas,logsigmas],feed_dict)

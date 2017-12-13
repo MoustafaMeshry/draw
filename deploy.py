@@ -21,8 +21,8 @@ if __name__ == '__main__':
     direction = const.Direction.LEFT.value
     size = const.A
     with_attention = False
-    save_path = os.path.join("./train/",
-                             'tmp_simple_d' + str(direction) + '_s' + str(size) + '_a' + str(with_attention)+'_openlab');
+    save_path = os.path.join("./train/fltbnk");
+
     tf.flags.DEFINE_string("data_dir", save_path, "")
     tf.flags.DEFINE_boolean("read_attn", with_attention, "enable attention for reader")
     tf.flags.DEFINE_boolean("write_attn", with_attention, "enable attention for writer")
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     y_recons = 1.0 / (1.0 + np.exp(-canvases))  # x_recons = sigmoid(canvas)
     print(y_recons.shape)
     B = A = int(np.sqrt(img_size))
-    prefix = './output/myattn_deploy3_withoutattenlc'
+    prefix = save_path+'/myattn_deploy3_withoutattenlc'
 
     xtrain = xtrain[0:10,:];
     ytrain = ytrain [0:10, :];
@@ -79,6 +79,10 @@ if __name__ == '__main__':
 
             img[2 * B + 10:3 * B + 10, i * A:(i + 1) * A] = im;
             img[3*B+10:4*B+10, i * A:(i + 1) * A] = (np.reshape(xtrain[i, :], (B, A)) * 255).astype(np.uint8);
+
+            cv2.imwrite(save_path+'/gt_' + str(i) + '.png', img[0:B, i * A:(i + 1) * A])
+            cv2.imwrite(save_path+'/in_' + str(i) + '.png', img[B+4:2*B+4, i * A:(i + 1) * A])
+            cv2.imwrite(save_path+'/out_' + str(i) + '.png', im)
 
         plt.matshow(img, cmap=plt.cm.hot)
         # you can merge using imagemagick, i.e. convert -delay
