@@ -83,8 +83,8 @@ class BatchGenerator:
                 xtrain[i, :] = img_x.flatten()
                 ytrain[i, :] = img_y.flatten()
                 # print('Generating texture')
-        # return xtrain,ytrain
-        return xtrain, xtrain
+        return xtrain,ytrain
+        #return xtrain, xtrain
 
 
 if __name__ == '__main__':

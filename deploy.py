@@ -17,7 +17,7 @@ if __name__ == '__main__':
     direction = const.Direction.DOWN.value
     size = const.A
     with_attention = const.attention_flag
-    save_path = os.path.join("./train/", 'simple_' + str(direction) + '_s' +
+    save_path = os.path.join("./train/", 'simple_xx_rgb_d' + str(direction) + '_s' +
                              str(size) + '_a' + str(with_attention))
     tf.flags.DEFINE_string("data_dir", save_path, "")
     tf.flags.DEFINE_boolean("read_attn", with_attention,
@@ -25,6 +25,10 @@ if __name__ == '__main__':
     tf.flags.DEFINE_boolean("write_attn", with_attention,
                             "enable attention for writer")
     FLAGS = tf.flags.FLAGS
+
+    # enter images
+    img_generator = batch_gen.BatchGenerator(const.batch_size)
+    xtrain, ytrain = img_generator.next(direction=direction, debug=True)
 
     is_result_sharpen = False
     model = draw_model.DrawModel(FLAGS.read_attn, FLAGS.write_attn)
@@ -37,14 +41,11 @@ if __name__ == '__main__':
     ckpt_file = os.path.join(FLAGS.data_dir, "drawmodel.ckpt")
     saver.restore(sess, ckpt_file)
 
-    # enter images
-    img_generator = batch_gen.BatchGenerator(const.batch_size, FLAGS.data_dir)
 
-    xtrain, ytrain = img_generator.next(direction=direction, debug=True)
 
     print('xtrain.shape ', xtrain.shape)
     # sys.exit(1)
-    feed_dict = {model.x: xtrain, model.y: ytrain}
+    feed_dict = {model.x: xtrain}
     canvases = sess.run(model.cs, feed_dict)  # generate some examples
     canvases = np.array(canvases)  # T x batch x img_size
 
@@ -86,8 +87,10 @@ if __name__ == '__main__':
 
             inp_im = np.reshape(ytrain[i, :], (B, A, 3))*intensity_multiplier
             inp_name = os.path.join(FLAGS.data_dir, 'inp_%d.png' % i)
+            gt_name = os.path.join(FLAGS.data_dir, 'gt_%d.png' % i)
             out_name = os.path.join(FLAGS.data_dir, 'out_%d.png' % i)
-            cv2.imwrite(inp_name, inp_im)
+            cv2.imwrite(inp_name, np.reshape(xtrain[i, :], (B, A, 3))*intensity_multiplier)
+            cv2.imwrite(gt_name , inp_im)
             cv2.imwrite(out_name, im)
 
         # plt.matshow(img, cmap=plt.cm.hot)

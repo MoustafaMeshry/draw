@@ -13,7 +13,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 if __name__ == '__main__':
     direction = const.Direction.LEFT.value
     with_attention = const.attention_flag
-    save_path = os.path.join("./train/", 'simple_d' + str(direction) + '_s' +
+    save_path = os.path.join("./train/", 'simple_xx_rgb_d' + str(direction) + '_s' +
                              str(const.A) + '_a' + str(with_attention))
     tf.flags.DEFINE_string("data_dir", save_path, "")
     tf.flags.DEFINE_boolean("read_attn", with_attention,
@@ -124,7 +124,14 @@ if __name__ == '__main__':
     tf.global_variables_initializer().run()
 
     # to restore from model, uncomment the next line
-    # saver.restore(sess, "train/tmp/simple_d2_s28_aFalse/drawmodel.ckpt")
+    ckpt_file = os.path.join(FLAGS.data_dir, "drawmodel.ckpt")
+    print(ckpt_file)
+    if (os.path.exists(FLAGS.data_dir) and len(os.listdir(FLAGS.data_dir)) > 0):
+        saver.restore(sess, ckpt_file)
+        print('Previous Model loaded ', len(os.listdir(FLAGS.data_dir)))
+    else:
+        print('Learning from scratch')
+
     img_generator = batch_gen.BatchGenerator(const.batch_size, FLAGS.data_dir)
 
     print(FLAGS.data_dir, os.path.exists(FLAGS.data_dir))
