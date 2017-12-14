@@ -54,6 +54,7 @@ def generateTile(output_img,radius,dir,texture_list=[0],input_img_col_shift=0,):
             #cv2.imwrite('./test/out_real.png',out_img * 255)
 
             output_img[out_offest[0]:out_offest[0]+B,out_offest[1]:out_offest[1]+B,:,idx] = out_img;
+            print('Saving output in %s.' % ('./test/'+str(texture_id) + '_reconstructed.png'))
             cv2.imwrite('./test/'+str(texture_id) + '_reconstructed.png', output_img[:,:,:,idx]* 255)
 
 if __name__ == '__main__':
@@ -71,7 +72,7 @@ if __name__ == '__main__':
 
     xtrain, ytrain = img_generator.next(direction=dir, debug=True);
 
-    texture_list = [4]; ## Currently works for only one texture
+    texture_list = [7]; ## Currently works for only one texture
 
     input_img = np.reshape(xtrain[texture_list,:],(A,B,const.num_channels,len(texture_list)))
     gt_img = np.reshape(ytrain[texture_list, :], (A, B, const.num_channels, len(texture_list)))

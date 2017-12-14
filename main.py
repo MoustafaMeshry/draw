@@ -12,6 +12,9 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 if __name__ == '__main__':
     direction = const.Direction.LEFT.value
+    # direction = const.Direction.RIGHT.value
+    # direction = const.Direction.UP.value
+    # direction = const.Direction.DOWN.value
     with_attention = const.attention_flag
     save_path = os.path.join("./train/", 'simple_xx_rgb_d' + str(direction) + '_s' +
                              str(const.A) + '_a' + str(with_attention))
@@ -57,18 +60,18 @@ if __name__ == '__main__':
     """ L2 loss """
     # Lx = filter_bank_loss.l2_loss(model.y, y_recons)
     # Lx2 = filter_bank_loss.l2_loss(model.y, y_recons)
-    # Lx_l2 = filter_bank_loss.l2_loss(model.y, y_recons)
+    Lx_l2 = filter_bank_loss.l2_loss(model.y, y_recons)
 
     """ Filter-bank loss """
     # Lx_filter_bank = filter_bank_loss.texture_filter_bank_loss(
     #                       model.y, y_recons)
-    Lx_filter_bank = filter_bank_loss.filter_bank_rgb_loss(model.y, y_recons)
+    # Lx_filter_bank = filter_bank_loss.filter_bank_rgb_loss(model.y, y_recons)
 
     """ Total variation regularization """
-    Lx_tv = 1e0 * filter_bank_loss.total_variation(y_recons)
+    # Lx_tv = 1e0 * filter_bank_loss.total_variation(y_recons)
 
     """ Color loss """
-    Lx_color = 1e4 * filter_bank_loss.mean_color_loss(model.y, y_recons)
+    # Lx_color = 1e4 * filter_bank_loss.mean_color_loss(model.y, y_recons)
 
     """ Vgg loss """
     # Lx = filter_bank_loss.vgg_loss(model.y, y_recons)
@@ -86,8 +89,8 @@ if __name__ == '__main__':
     # 2. Cost from latent variable distribution
     # cost = Lx + variational_loss_weight * Lz
     # cost = 0.01 * Lx + Lx2 + variational_loss_weight * Lz
-    # cost = Lx_l2 + variational_loss_weight * Lz
-    cost = Lx_filter_bank + Lx_tv + Lx_color + Lz
+    cost = Lx_l2 + variational_loss_weight * Lz
+    # cost = Lx_filter_bank + Lx_tv + Lx_color + Lz
     # cost = Lx_vgg + Lz
     # cost = Lx_filter_bank + variational_loss_weight * Lz
     # cost = Lx_l2 + tv + color_loss + variational_loss_weight * Lz
