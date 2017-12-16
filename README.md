@@ -9,3 +9,5 @@ Texture synthesis is the process of generating a new texture given a texture sam
 
 We train DRAW to synthesize a texture and enforce smooth alignment between neighboring tiles. We propose a novel loss function, FLTBNKs, for training a generative texture network. It is evaluated against L2 loss, as a baseline, and the texture loss proposed by Gatys et al.. 
 As we sample texture tiles from DTD, DRAW, a recurrent variational auto-encoder, learns neighboring tiles. Multiple loss functions are evaluated for texture synthesis. In the deployment phase, the trained network generates the four neighboring tiles for a center tile --- an initial sample texture. The generated tiles act as input in the next step to further expand the texture size.
+
+![](./figures/output.gif)
