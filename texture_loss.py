@@ -2,7 +2,7 @@ import constants as const
 import numpy as np
 import pickle as pkl
 import custom_vgg19 as vgg19
-from synthesize import get_texture_loss, get_l2_norm_loss, get_total_variation
+from synthesize_bak import get_texture_loss, get_l2_norm_loss, get_total_variation
 import tensorflow as tf
 
 
@@ -100,8 +100,8 @@ class TextureLoss:
         return l2_loss
 
     def vgg_loss(self, y, y_gt):
-        y = tf.reshape(y, [self.batch_sz, const.B, const.A, 3])
-        y_gt = tf.reshape(y_gt, [self.batch_sz, const.B, const.A, 3])
+        y = tf.reshape(y, [self.batch_sz, const.B, const.A, const.num_channels])
+        y_gt = tf.reshape(y_gt, [self.batch_sz, const.B, const.A, const.num_channels])
 
         TEXTURE_WEIGHT = 3.
         NORM_WEIGHT = .1
@@ -113,9 +113,9 @@ class TextureLoss:
         # self.x_model.build(y, [const.B,const.A,3], isBGR=True)
         texture_model = vgg19.Vgg19()
         x_model = vgg19.Vgg19()
-        texture_model.build(y_gt, [self.batch_sz, const.B, const.A, 3],
+        texture_model.build(y_gt, [self.batch_sz, const.B, const.A, const.num_channels],
                             isBGR=True)
-        x_model.build(y, [self.batch_sz, const.B, const.A, 3], isBGR=True)
+        x_model.build(y, [self.batch_sz, const.B, const.A, const.num_channels], isBGR=True)
 
         # unweighted_texture_loss = get_texture_loss(self.x_model,
         #                                            self.texture_model)

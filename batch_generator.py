@@ -22,8 +22,8 @@ class BatchGenerator:
                 data_directory, one_hot=True).train  # binarized 0-1 mnist data
         else:
             self.img_list = []
-            for i in range(5):  # 5 is the number of images in the trainset!!
-                img_path = './texture/simple/'+str(i)+'.jpg'
+            for i in range(1):  # 5 is the number of images in the trainset!!
+                img_path = './texture/final/'+str(i)+'.jpg'
                 img = cv2.imread(img_path, 1)
                 # FIXME how does unnormalized images affect other losses?
                 img = img.astype(np.float32) / 255

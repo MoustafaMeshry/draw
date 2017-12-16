@@ -14,10 +14,10 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 if __name__ == '__main__':
     # load module
 
-    direction = const.Direction.DOWN.value
+    direction = const.Direction.UP.value
     size = const.A
     with_attention = const.attention_flag
-    save_path = os.path.join("./train/", 'simple_xx_rgb_d' + str(direction) + '_s' +
+    save_path = os.path.join("./train/", 'simple_xx_1_rgb_d' + str(direction) + '_s' +
                              str(size) + '_a' + str(with_attention))
     tf.flags.DEFINE_string("data_dir", save_path, "")
     tf.flags.DEFINE_boolean("read_attn", with_attention,
@@ -58,8 +58,8 @@ if __name__ == '__main__':
     # prefix = './output/myattn_deploy3_withoutatten'
     prefix = os.path.join(FLAGS.data_dir, 'myattn_deploy3_withoutatten')
 
-    xtrain = xtrain[0:10, :]
-    ytrain = ytrain[0:10, :]
+    xtrain = xtrain[0:20, :]
+    ytrain = ytrain[0:20, :]
     intensity_multiplier = 255  # 255
 
     for t in range(T):

@@ -56,6 +56,8 @@ class DrawModel:
             r = read(self.x, x_hat, h_dec_prev)
             h_enc, enc_state = self.encode(enc_state, tf.concat([r, h_dec_prev], 1))
             z, mus[t], logsigmas[t], sigmas[t] = self.sampleQ(h_enc)
+            # save Z
+
             h_dec, dec_state = self.decode(dec_state, z)
             self.cs[t] = c_prev + write(h_dec)  # store results
             h_dec_prev = h_dec

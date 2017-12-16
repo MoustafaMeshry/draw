@@ -1,10 +1,10 @@
 from enum import Enum
 
 attention_flag = False
-batch_size = 100  # TODO for vgg_loss, this must be 1 (at least for now)
+batch_size = 50  # TODO for vgg_loss, this must be 1 (at least for now)
 A, B = 28, 28  # image width, height
-# A, B = 50, 50 # image width, height
-# A, B = 128, 128 # image width, height
+#A, B = 50, 50 # image width, height
+#A, B = 128, 128 # image width, height
 num_channels = 3
 img_size = B*A*num_channels  # the canvas size
 enc_size = 256  # number of hidden units / output size in LSTM of the encoder
@@ -16,7 +16,9 @@ T = 10  # MNIST generation sequence length
 learning_rate = 1e-3  # learning rate for optimizer
 eps = 1e-8  # epsilon for numerical stability
 
-vgg_model_path = '/fs/vulcan-scratch/mmeshry/DRAW/lib/weights/vgg19.npy'
+#vgg_model_path = '/fs/vulcan-scratch/mmeshry/DRAW/lib/weights/vgg19.npy'
+#vgg_model_path = '/Users/ahmedtaha/Downloads/vgg19.npy'
+vgg_model_path = './vgg19.npy'
 
 gpu_used = True
 if(gpu_used):
